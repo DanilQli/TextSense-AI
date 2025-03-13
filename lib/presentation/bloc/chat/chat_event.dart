@@ -81,11 +81,12 @@ class RemoveReactionEvent extends ChatEvent {
 
 class TranslateMessageEvent extends ChatEvent {
   final Message message;
+  final String? targetLanguage; // Добавляем параметр целевого языка
 
-  const TranslateMessageEvent(this.message);
+  const TranslateMessageEvent(this.message, {this.targetLanguage});
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message, targetLanguage];
 }
 
 class CopyMessageEvent extends ChatEvent {
@@ -104,4 +105,17 @@ class DeleteMessageEvent extends ChatEvent {
 
   @override
   List<Object> get props => [message];
+}
+
+class RestoreStateEvent extends ChatEvent {
+  final List<Message> messages;
+  final String? currentChatName;
+
+  const RestoreStateEvent({
+    required this.messages,
+    this.currentChatName,
+  });
+
+  @override
+  List<Object?> get props => [messages, currentChatName];
 }

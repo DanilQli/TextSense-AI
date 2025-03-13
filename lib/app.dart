@@ -1,6 +1,7 @@
 //app.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'config/dependency_injection.dart';
 import 'config/routes.dart';
 import 'presentation/bloc/theme/theme_bloc.dart';
@@ -42,7 +43,12 @@ class ChatApp extends StatelessWidget {
                   Locale('en'),
                   Locale('ru')
                 ],
-                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                localizationsDelegates: const [
+                // Добавляем стандартные делегаты локализации Flutter
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
                 initialRoute: AppRoutes.chat,
                 onGenerateRoute: AppRouter.onGenerateRoute,
               );

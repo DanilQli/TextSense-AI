@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/translation_utils.dart';
+import '../../../domain/entities/message.dart';
 import '../../bloc/chat/chat_bloc.dart';
 import '../../bloc/language/language_bloc.dart';
-import '../../bloc/theme/theme_bloc.dart';
 import '../../../core/services/translation_service.dart';
 import '../../../core/utils/datetime_utils.dart';
+
 
 class LoadChatDialog extends StatefulWidget {
   const LoadChatDialog({Key? key}) : super(key: key);
@@ -14,11 +16,41 @@ class LoadChatDialog extends StatefulWidget {
 }
 
 class _LoadChatDialogState extends State<LoadChatDialog> {
+  // Сохраняем текущее состояние при инициализации
+  List<Message>? _savedMessages;
+  String? _savedChatName;
+  bool _isStateRestored = false;
+
   @override
   void initState() {
     super.initState();
+
+    // Сохраняем текущее состояние чата
+    final chatBloc = context.read<ChatBloc>();
+    if (chatBloc.state is ChatLoaded) {
+      final loadedState = chatBloc.state as ChatLoaded;
+      _savedMessages = List<Message>.from(loadedState.messages);
+      _savedChatName = loadedState.currentChatName;
+    }
+
     // Запрашиваем список сохраненных чатов при открытии диалога
     context.read<ChatBloc>().add(GetSavedChatsEvent());
+  }
+
+  @override
+  void dispose() {
+    // Восстанавливаем состояние при закрытии диалога, если не было выбрано другого чата
+    if (!_isStateRestored && _savedMessages != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          context.read<ChatBloc>().add(RestoreStateEvent(
+            messages: _savedMessages!,
+            currentChatName: _savedChatName,
+          ));
+        }
+      });
+    }
+    super.dispose();
   }
 
   Future<void> _showDeleteConfirmation(BuildContext context, String chatName) async {
@@ -28,7 +60,6 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
         ? languageState.languageCode
         : 'en';
 
-    final translations = TranslationService();
     final chatBloc = context.read<ChatBloc>();
 
     final confirmed = await showDialog<bool>(
@@ -36,22 +67,22 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text(translations.translate(
+          title: Text(Tr.get(
               TranslationKeys.deleteChatConfirmationTitle,
               languageCode
           )),
           content: SingleChildScrollView(
             child: Text(
-                '${translations.translate(TranslationKeys.deleteChatConfirmationMessage, languageCode)} "$chatName"?'
+                '${Tr.get(TranslationKeys.deleteChatConfirmationMessage, languageCode)} "$chatName"?'
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text(translations.translate(TranslationKeys.cancel, languageCode)),
+              child: Text(Tr.get(TranslationKeys.cancel, languageCode)),
               onPressed: () => Navigator.of(dialogContext).pop(false),
             ),
             TextButton(
-              child: Text(translations.translate(TranslationKeys.delete, languageCode)),
+              child: Text(Tr.get(TranslationKeys.delete, languageCode)),
               onPressed: () => Navigator.of(dialogContext).pop(true),
             ),
           ],
@@ -68,20 +99,14 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
   @override
   Widget build(BuildContext context) {
     // Получаем текущий язык
-    final languageState = context.read<LanguageBloc>().state;
-    final languageCode = languageState is LanguageLoaded
-        ? languageState.languageCode
-        : 'en';
+    String languageCode = 'en';
+    if (context.read<LanguageBloc>().state is LanguageLoaded) {
+      languageCode = (context.read<LanguageBloc>().state as LanguageLoaded).languageCode;
+    }
 
     // Получаем текущую тему
-    final themeState = context.read<ThemeBloc>().state;
-    final isDarkMode = themeState is ThemeLoaded
-        ? themeState.themeMode == ThemeMode.dark
-        : false;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    final translations = TranslationService();
-
-    // Применяем тему в соответствии с текущей темой приложения
     return Theme(
       data: isDarkMode
           ? ThemeData.dark().copyWith(
@@ -115,31 +140,53 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
           } else if (state is ChatError) {
             // Показываем ошибку загрузки
             return AlertDialog(
-              title: Text(translations.translate(TranslationKeys.uploadChat, languageCode)),
+              title: Text(Tr.get(TranslationKeys.uploadChat, languageCode)),
               content: Text(state.message),
               actions: [
                 TextButton(
-                  child: Text(translations.translate(TranslationKeys.cancel, languageCode)),
-                  onPressed: () => Navigator.pop(context),
+                  child: Text(Tr.get(TranslationKeys.cancel, languageCode)),
+                  onPressed: () {
+                    Navigator.pop(context);
+
+                    // Восстанавливаем предыдущее состояние
+                    if (_savedMessages != null) {
+                      _isStateRestored = true;
+                      context.read<ChatBloc>().add(RestoreStateEvent(
+                        messages: _savedMessages!,
+                        currentChatName: _savedChatName,
+                      ));
+                    }
+                  },
                 ),
               ],
             );
           }
 
           return AlertDialog(
-            title: Text(translations.translate(TranslationKeys.uploadChat, languageCode)),
+            title: Text(Tr.get(TranslationKeys.uploadChat, languageCode)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             content: SizedBox(
               width: double.maxFinite,
               height: 300,
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : _buildSavedChatsList(context, savedChats, languageCode),
+                  : _buildChatList(context, savedChats, languageCode),
             ),
             actions: <Widget>[
               TextButton(
-                child: Text(translations.translate(TranslationKeys.cancel, languageCode)),
-                onPressed: () => Navigator.pop(context),
+                child: Text(Tr.get(TranslationKeys.cancel, languageCode)),
+                onPressed: () {
+                  Navigator.pop(context);
+
+                  // Восстанавливаем предыдущее состояние
+                  if (_savedMessages != null) {
+                    _isStateRestored = true;
+                    context.read<ChatBloc>().add(RestoreStateEvent(
+                      messages: _savedMessages!,
+                      currentChatName: _savedChatName,
+                    ));
+                  }
+                },
               ),
             ],
           );
@@ -148,12 +195,14 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
     );
   }
 
-  Widget _buildSavedChatsList(BuildContext context, Map<String, DateTime> savedChats, String languageCode) {
-    final translations = TranslationService();
+  Widget _buildChatList(
+      BuildContext context,
+      Map<String, DateTime> savedChats,
+      String languageCode) {
 
     if (savedChats.isEmpty) {
       return Center(
-        child: Text(translations.translate(TranslationKeys.noSavedChats, languageCode)),
+        child: Text(Tr.get(TranslationKeys.noSavedChats, languageCode)),
       );
     }
 
@@ -182,7 +231,7 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: Text(
-            '${translations.translate(TranslationKeys.lastModified, languageCode)}: $formattedDate',
+            '${Tr.get(TranslationKeys.lastModified, languageCode)}: $formattedDate',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -199,8 +248,11 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
             },
           ),
           onTap: () {
+            final chatBloc = context.read<ChatBloc>();
+            // Отмечаем, что мы выбрали новый чат, так что не нужно восстанавливать старое состояние
+            _isStateRestored = true;
+            chatBloc.add(LoadChatEvent(chatName));
             Navigator.pop(context);
-            context.read<ChatBloc>().add(LoadChatEvent(chatName));
           },
         );
       },

@@ -1,8 +1,8 @@
 //message_action.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/utils/translation_utils.dart';
 import '../bloc/chat/chat_bloc.dart';
-import '../bloc/language/language_bloc.dart';
 import 'dialogs/emoji_picker_dialog.dart';
 import '../../domain/entities/message.dart';
 import '../../core/services/translation_service.dart';
@@ -11,27 +11,19 @@ class MessageActionsMenu extends StatelessWidget {
   final Message message;
 
   const MessageActionsMenu({
-    Key? key,
+    super.key,
     required this.message,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Получаем текущий язык
-    String languageCode = 'en';
-    final languageState = context.read<LanguageBloc>().state;
-    if (languageState is LanguageLoaded) {
-      languageCode = languageState.languageCode;
-    }
-
-    final translations = TranslationService();
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         ListTile(
           leading: const Icon(Icons.emoji_emotions),
-          title: Text(translations.translate(TranslationKeys.reaction, languageCode)),
+          title: Text(Tr.get(TranslationKeys.reaction)),
           onTap: () {
             Navigator.pop(context);
             _showEmojiPicker(context, message);
@@ -39,7 +31,7 @@ class MessageActionsMenu extends StatelessWidget {
         ),
         ListTile(
           leading: const Icon(Icons.translate),
-          title: Text(translations.translate(TranslationKeys.translate, languageCode)),
+          title: Text(Tr.get(TranslationKeys.translate)),
           onTap: () {
             context.read<ChatBloc>().add(TranslateMessageEvent(message));
             Navigator.pop(context);
@@ -47,18 +39,18 @@ class MessageActionsMenu extends StatelessWidget {
         ),
         ListTile(
           leading: const Icon(Icons.copy),
-          title: Text(translations.translate(TranslationKeys.copy, languageCode)),
+          title: Text(Tr.get(TranslationKeys.copy)),
           onTap: () {
             context.read<ChatBloc>().add(CopyMessageEvent(message));
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(translations.translate(TranslationKeys.copied, languageCode))),
+              SnackBar(content: Text(Tr.get(TranslationKeys.copied))),
             );
           },
         ),
         ListTile(
           leading: const Icon(Icons.delete),
-          title: Text(translations.translate(TranslationKeys.delete, languageCode)),
+          title: Text(Tr.get(TranslationKeys.delete)),
           onTap: () {
             context.read<ChatBloc>().add(DeleteMessageEvent(message));
             Navigator.pop(context);
@@ -69,9 +61,14 @@ class MessageActionsMenu extends StatelessWidget {
   }
 
   void _showEmojiPicker(BuildContext context, Message message) {
+    final chatBloc = context.read<ChatBloc>();
+
     showModalBottomSheet(
       context: context,
-      builder: (context) => EmojiPickerDialog(message: message),
+      builder: (dialogContext) => BlocProvider.value(
+        value: chatBloc,
+        child: EmojiPickerDialog(message: message),
+      ),
     );
   }
 }

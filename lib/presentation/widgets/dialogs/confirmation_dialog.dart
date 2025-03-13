@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/translation_utils.dart';
 import '../../bloc/language/language_bloc.dart';
 import '../../../core/services/translation_service.dart';
 
@@ -33,12 +34,11 @@ class ConfirmationDialog extends StatelessWidget {
         ? languageState.languageCode
         : 'en';
 
-    final translations = TranslationService();
 
     return AlertDialog(
-      title: Text(translations.translate(titleKey, languageCode)),
+      title: Text(Tr.get(titleKey, languageCode)),
       content: Text(
-          message ?? translations.translate(messageKey, languageCode)
+          message ?? Tr.get(messageKey, languageCode)
       ),
       actions: [
         TextButton(
@@ -48,7 +48,7 @@ class ConfirmationDialog extends StatelessWidget {
               onCancel!();
             }
           },
-          child: Text(translations.translate(cancelKey, languageCode)),
+          child: Text(Tr.get(cancelKey, languageCode)),
         ),
         TextButton(
           onPressed: () {
@@ -60,7 +60,7 @@ class ConfirmationDialog extends StatelessWidget {
           style: isDanger ? ButtonStyle(
             foregroundColor: MaterialStateProperty.all(Colors.red),
           ) : null,
-          child: Text(translations.translate(confirmKey, languageCode)),
+          child: Text(Tr.get(confirmKey, languageCode)),
         ),
       ],
     );

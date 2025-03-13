@@ -4,6 +4,7 @@ import 'config/dependency_injection.dart';
 import 'app.dart';
 import 'core/logger/app_logger.dart';
 import 'core/services/translation_service.dart';
+import 'data/datasources/local/chat_local_datasource.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,8 @@ void main() async {
     // Инициализация зависимостей
     await initDependencies();
 
+    // Создаем пустой чат, если его нет
+    await getIt<ChatLocalDataSource>().ensureCurrentChatExists();
     // Загрузка переводов и других ресурсов
     await preloadResources();
 
@@ -26,8 +29,13 @@ void main() async {
 }
 
 Future<void> preloadResources() async {
-  // Загрузка переводов, шрифтов и других ресурсов
-  await getIt<TranslationService>().loadTranslations();
+  // Загрузка переводов
+  try {
+    await getIt<TranslationService>().loadTranslations();
+    AppLogger.debug('Переводы успешно загружены');
+  } catch (e) {
+    AppLogger.error('Ошибка при загрузке переводов', e);
+  }
 }
 
 class ErrorApp extends StatelessWidget {

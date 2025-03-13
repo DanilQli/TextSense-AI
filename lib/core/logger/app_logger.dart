@@ -35,7 +35,13 @@ abstract class AppLogger {
 }
 
 class AppLoggerImpl implements AppLogger {
-  late Logger _logger;
+  // Инициализируем логгер с базовой конфигурацией, чтобы избежать ошибок до полной инициализации
+  Logger _logger = Logger(
+    printer: PrettyPrinter(
+      methodCount: 0,
+      printTime: true,
+    ),
+  );
 
   @override
   Future<void> initialize() async {

@@ -1,6 +1,7 @@
 //save_chat_dialog.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/translation_utils.dart';
 import '../../bloc/chat/chat_bloc.dart';
 import '../../bloc/language/language_bloc.dart';
 import '../../../core/utils/file_utils.dart';
@@ -77,7 +78,7 @@ class _SaveChatDialogState extends State<SaveChatDialog> {
     } catch (e) {
       AppLogger.error('Неизвестная ошибка при получении имени чата', e);
       setState(() {
-        _errorMessage = TranslationService().translate(
+        _errorMessage = Tr.get(
             TranslationKeys.defaultChatNameError,
             _languageCode
         );
@@ -91,7 +92,7 @@ class _SaveChatDialogState extends State<SaveChatDialog> {
 
     if (name.isEmpty) {
       setState(() {
-        _errorMessage = TranslationService().translate(
+        _errorMessage = Tr.get(
             TranslationKeys.chatNameEmptyError,
             _languageCode
         );
@@ -102,7 +103,7 @@ class _SaveChatDialogState extends State<SaveChatDialog> {
     // Проверяем корректность имени файла
     if (!FileUtils.isValidFileName(name)) {
       setState(() {
-        _errorMessage = TranslationService().translate(
+        _errorMessage = Tr.get(
             TranslationKeys.invalidFileName,
             _languageCode
         );
@@ -141,8 +142,8 @@ class _SaveChatDialogState extends State<SaveChatDialog> {
         SnackBar(
             content: Text(
                 widget.isRename
-                    ? '${TranslationService().translate(TranslationKeys.chatRenamed, _languageCode)}: $name'
-                    : '${TranslationService().translate(TranslationKeys.chatSaved, _languageCode)}: $name'
+                    ? '${Tr.get(TranslationKeys.chatRenamed, _languageCode)}: $name'
+                    : '${Tr.get(TranslationKeys.chatSaved, _languageCode)}: $name'
             )
         )
     );
@@ -158,23 +159,23 @@ class _SaveChatDialogState extends State<SaveChatDialog> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(TranslationService().translate(
+          title: Text(Tr.get(
               TranslationKeys.overwriteChat,
               _languageCode
           )),
           content: Text(
-              '${TranslationService().translate(TranslationKeys.chatExistsConfirmation, _languageCode)} "$chatName"?'
+              '${Tr.get(TranslationKeys.chatExistsConfirmation, _languageCode)} "$chatName"?'
           ),
           actions: [
             TextButton(
-              child: Text(TranslationService().translate(
+              child: Text(Tr.get(
                   TranslationKeys.cancel,
                   _languageCode
               )),
               onPressed: () => Navigator.of(context).pop(false),
             ),
             TextButton(
-              child: Text(TranslationService().translate(
+              child: Text(Tr.get(
                   TranslationKeys.overwrite,
                   _languageCode
               )),
@@ -190,13 +191,12 @@ class _SaveChatDialogState extends State<SaveChatDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final translations = TranslationService();
 
     return AlertDialog(
       title: Text(
           widget.isRename
-              ? translations.translate(TranslationKeys.renameChat, _languageCode)
-              : translations.translate(TranslationKeys.saveChat, _languageCode)
+              ? Tr.get(TranslationKeys.renameChat, _languageCode)
+              : Tr.get(TranslationKeys.saveChat, _languageCode)
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -206,7 +206,7 @@ class _SaveChatDialogState extends State<SaveChatDialog> {
             if (widget.isRename)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16.0),
-                child: Text(translations.translate(TranslationKeys.renameChatInfo, _languageCode)),
+                child: Text(Tr.get(TranslationKeys.renameChatInfo, _languageCode)),
               ),
             if (_isLoading)
               const Center(child: CircularProgressIndicator())
@@ -214,8 +214,8 @@ class _SaveChatDialogState extends State<SaveChatDialog> {
               TextField(
                 controller: _chatNameController,
                 decoration: InputDecoration(
-                  labelText: translations.translate(TranslationKeys.chatNameLabel, _languageCode),
-                  hintText: translations.translate(TranslationKeys.chatNameHint, _languageCode),
+                  labelText: Tr.get(TranslationKeys.chatNameLabel, _languageCode),
+                  hintText: Tr.get(TranslationKeys.chatNameHint, _languageCode),
                   border: const OutlineInputBorder(),
                   errorText: _errorMessage,
                 ),
@@ -231,16 +231,16 @@ class _SaveChatDialogState extends State<SaveChatDialog> {
       ),
       actions: [
         TextButton(
-          child: Text(translations.translate(TranslationKeys.cancel, _languageCode)),
+          child: Text(Tr.get(TranslationKeys.cancel, _languageCode)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         TextButton(
+          onPressed: _saveChat,
           child: Text(
               widget.isRename
-                  ? translations.translate(TranslationKeys.rename, _languageCode)
-                  : translations.translate(TranslationKeys.save, _languageCode)
+                  ? Tr.get(TranslationKeys.rename, _languageCode)
+                  : Tr.get(TranslationKeys.save, _languageCode)
           ),
-          onPressed: _saveChat,
         ),
       ],
     );

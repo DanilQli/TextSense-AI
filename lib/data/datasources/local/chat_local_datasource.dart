@@ -15,6 +15,8 @@ abstract class ChatLocalDataSource {
   Future<bool> chatExists(String chatName);
   Future<String> getUniqueDefaultChatName();
   Future<bool> renameChat(String oldName, String newName);
+  ensureCurrentChatExists() {}
+
 }
 
 class ChatLocalDataSourceImpl implements ChatLocalDataSource {
@@ -22,6 +24,17 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
   final String fileExtension = 'json';
 
   ChatLocalDataSourceImpl({required this.logger});
+
+  Future<void> ensureCurrentChatExists() async {
+    try {
+      final exists = await chatExists('current');
+      if (!exists) {
+        await saveChat('current', []);
+      }
+    } catch (e) {
+      logger.logWarning('Не удалось создать пустой чат', e);
+    }
+  }
 
   @override
   Future<Map<String, DateTime>> getSavedChats() async {
@@ -165,7 +178,30 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
   @override
   Future<String> getUniqueDefaultChatName() async {
     try {
-      return await FileUtils.getUniqueFileName('Новый чат');
+      String baseName = "New chat";
+
+      // Получаем список существующих чатов
+      final savedChats = await getSavedChats();
+
+      // Начинаем с "New Chat"
+      if (!savedChats.containsKey(baseName)) {
+        return baseName;
+      }
+
+      // Если "New Chat" уже существует, ищем "New Chat 1", "New Chat 2", и т.д.
+      int counter = 1;
+      while (true) {
+        String candidateName = "$baseName $counter";
+        if (!savedChats.containsKey(candidateName)) {
+          return candidateName;
+        }
+        counter++;
+
+        // Защита от бесконечного цикла
+        if (counter > 10000) {
+          throw Exception('Не удалось создать уникальное имя чата');
+        }
+      }
     } catch (e) {
       logger.logError('Ошибка при генерации имени чата', e);
       throw FileException('Не удалось создать имя для нового чата: $e');

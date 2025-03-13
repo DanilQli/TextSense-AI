@@ -1,13 +1,34 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:get_it/get_it.dart';
 import '../logger/app_logger.dart';
 import '../errors/app_exception.dart';
 
 class TranslationKeys {
-  static const String appTitle = 'appTitle';
-  static const String enterText = 'enterText';
+  static const String settings = 'settings';
+  static const String appearance = 'appearance';
+  static const String theme = 'theme';
+  static const String systemTheme = 'systemTheme';
+  static const String lightTheme = 'lightTheme';
+  static const String darkTheme = 'darkTheme';
+  static const String language = 'language';
+  static const String about = 'about';
+  static const String version = 'version';
+  static const String noMessages = 'noMessages';
+  static const String startChat = 'startChat';
+  static const String processingError = 'processingError';
+  static const String recordVoice = 'recordVoice';
+  static const String stopRecording = 'stopRecording';
+  static const String classificationFailed = 'classificationFailed';
   static const String category = 'category';
   static const String confidence = 'confidence';
+  static const String emotionalTone = 'emotionalTone';
+  static const String switchToDarkTheme = 'switchToDarkTheme';
+  static const String switchToLightTheme = 'switchToLightTheme';
+  static const String savedChats = 'savedChats';
+  static const String errorLoadingChats = 'errorLoadingChats';
+  static const String appTitle = 'appTitle';
+  static const String enterText = 'enterText';
   static const String emotionalColoring = 'emotionalColoring';
   static const String exportChat = 'exportChat';
   static const String chatHistory = 'chatHistory';
@@ -106,4 +127,7 @@ class TranslationServiceImpl implements TranslationService {
     final translations = getTranslations(languageCode);
     return translations[key] ?? key;
   }
+}
+TranslationService getTranslationService() {
+  return GetIt.instance<TranslationService>();
 }

@@ -1,6 +1,8 @@
 //theme_toggle_button.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/services/translation_service.dart';
+import '../../core/utils/translation_utils.dart';
 import '../bloc/theme/theme_bloc.dart';
 
 class ThemeToggleButton extends StatelessWidget {
@@ -45,7 +47,7 @@ class ThemeToggleButton extends StatelessWidget {
         ),
       ),
       onPressed: customOnPressed,
-      tooltip: tooltip ?? (isDarkMode ? 'Переключить на светлую тему' : 'Переключить на темную тему'),
+      tooltip: tooltip ?? (isDarkMode ? Tr.get(TranslationKeys.switchToLightTheme) : Tr.get(TranslationKeys.switchToDarkTheme)),
     );
   }
 }

@@ -1,6 +1,7 @@
 //chat_list_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/utils/translation_utils.dart';
 import '../bloc/chat/chat_bloc.dart';
 import '../bloc/language/language_bloc.dart';
 import '../widgets/dialogs/confirmation_dialog.dart';
@@ -29,14 +30,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
         ? languageState.languageCode
         : 'en';
 
-    final translations = TranslationService();
-
     showDialog(
       context: context,
       builder: (context) => ConfirmationDialog(
         titleKey: TranslationKeys.deleteChatConfirmationTitle,
         messageKey: TranslationKeys.deleteChatConfirmationMessage,
-        message: '${translations.translate(TranslationKeys.deleteChatConfirmationMessage, languageCode)} "$chatName"?',
+        message: '${Tr.get(TranslationKeys.deleteChatConfirmationMessage, languageCode)} "$chatName"?',
         confirmKey: TranslationKeys.delete,
         isDanger: true,
         onConfirm: () {
@@ -54,13 +53,24 @@ class _ChatListScreenState extends State<ChatListScreen> {
         ? languageState.languageCode
         : 'en';
 
-    final translations = TranslationService();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(translations.translate('savedChats', languageCode)),
+        title: Text(Tr.get('savedChats', languageCode)),
       ),
-      body: BlocBuilder<ChatBloc, ChatState>(
+      body: BlocConsumer<ChatBloc, ChatState>(
+        listenWhen: (previous, current) =>
+        current is ChatDeleted || current is ChatError,
+        listener: (context, state) {
+          if (state is ChatDeleted) {
+            // После удаления чата запрашиваем обновление списка
+            context.read<ChatBloc>().add(GetSavedChatsEvent());
+          } else if (state is ChatError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
         buildWhen: (previous, current) =>
         current is ChatSavedChatsLoaded ||
             current is ChatLoading ||
@@ -75,7 +85,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
             if (savedChats.isEmpty) {
               return Center(
-                child: Text(translations.translate(TranslationKeys.noSavedChats, languageCode)),
+                child: Text(Tr.get(TranslationKeys.noSavedChats, languageCode)),
               );
             }
 
@@ -111,7 +121,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
-                    '${translations.translate(TranslationKeys.lastModified, languageCode)}: $formattedDate',
+                    '${Tr.get(TranslationKeys.lastModified, languageCode)}: $formattedDate',
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),

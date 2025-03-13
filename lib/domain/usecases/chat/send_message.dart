@@ -1,11 +1,12 @@
 import 'package:dartz/dartz.dart';
 import '../../../core/errors/failure.dart';
+import '../../../core/services/translation_service.dart';
+import '../../../core/utils/translation_utils.dart';
 import '../../entities/message.dart';
 import '../../repositories/chat_repository.dart';
 import '../../repositories/classifier_repository.dart';
 import '../../repositories/translator_repository.dart';
 import '../classification/classify_text.dart';
-// Импорт для экспоненты
 import 'dart:math' as Math;
 
 class SendMessage {
@@ -58,22 +59,23 @@ class SendMessage {
       List<List<double>>? emotionClassification;
 
       classificationResult.fold(
-              (failure) {
-            // Если классификация не удалась, оставляем null
-            classification = null;
-            emotionClassification = null;
-          },
-              (result) {
-            classification = result[0].cast<List<double>>();
-            emotionClassification = result[1].cast<List<double>>();
-          }
+            (failure) {
+          // Если классификация не удалась, оставляем null
+          classification = null;
+          emotionClassification = null;
+        },
+            (result) {
+          // Правильно извлекаем результаты
+          classification = result[0];
+          emotionClassification = result[1];
+        },
       );
 
       // Формируем результат классификации в виде текста
       String resultText = 'Не удалось классифицировать текст';
 
       if (classification != null && emotionClassification != null) {
-        resultText = _formatClassificationResult(classification!, emotionClassification!);
+        resultText = _formatClassificationResult(classification, emotionClassification);
       }
 
       // Создаем ответное сообщение от бота
@@ -100,14 +102,18 @@ class SendMessage {
   }
 
   String _formatClassificationResult(
-      List<List<double>> classification,
-      List<List<double>> emotionClassification
+      List<List<double>>? classification,
+      List<List<double>>? emotionClassification
       ) {
+    // Проверяем на null в начале метода
+    if (classification == null || emotionClassification == null) {
+      return 'Не удалось классифицировать текст';
+    }
     // Реализация форматирования результатов классификации
-    // Это упрощенная версия, в реальном приложении нужно учитывать локализацию
 
     final results = <String>[];
 
+    // Обрабатываем каждую строку отдельно
     for (int i = 0; i < classification.length; i++) {
       final categoryScores = classification[i];
       final emotionScore = i < emotionClassification.length
@@ -124,12 +130,13 @@ class SendMessage {
       final emotionPercent = ((emotionScore + 1) / 2 * 100).toStringAsFixed(2);
 
       results.add(
-          "Категория: $predictedLabel\n"
-              "Уверенность: ${(confidence * 100).toStringAsFixed(2)}%\n"
-              "Эмоциональная окраска: $emotionPercent%"
+          "${Tr.get(TranslationKeys.category)}: $predictedLabel\n"
+              "${Tr.get(TranslationKeys.confidence)}: ${(confidence * 100).toStringAsFixed(2)}%\n"
+              "${Tr.get(TranslationKeys.emotionalTone)}: $emotionPercent%"
       );
     }
 
+    // Соединяем результаты в одну строку, разделяя их пустой строкой
     return results.join('\n\n');
   }
 

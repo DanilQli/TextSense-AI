@@ -30,9 +30,10 @@ class AppRouter {
         );
 
       case AppRoutes.chatList:
+      // Используем BlocProvider.value, чтобы передать существующий экземпляр блока
         return MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: getIt<ChatBloc>()..add(GetSavedChatsEvent()),
+          builder: (context) => BlocProvider.value(
+            value: BlocProvider.of<ChatBloc>(context)..add(GetSavedChatsEvent()),
             child: const ChatListScreen(),
           ),
         );

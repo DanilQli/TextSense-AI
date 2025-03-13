@@ -45,8 +45,8 @@ class MessageBubble extends StatelessWidget {
                   ),
                 ),
               if (message.isTranslating)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 8.0),
                   child: Center(
                     child: SizedBox(
                       width: 24,

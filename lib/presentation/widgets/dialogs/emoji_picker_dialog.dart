@@ -13,7 +13,10 @@ class EmojiPickerDialog extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  @override
   Widget build(BuildContext context) {
+    final chatBloc = context.read<ChatBloc>();
+
     return GridView.count(
       crossAxisCount: 8,
       mainAxisSpacing: 4,
@@ -24,7 +27,7 @@ class EmojiPickerDialog extends StatelessWidget {
         final emoji = AppConstants.defaultReactions[index];
         return GestureDetector(
           onTap: () {
-            context.read<ChatBloc>().add(AddReactionEvent(message, emoji));
+            chatBloc.add(AddReactionEvent(message, emoji));
             Navigator.pop(context);
           },
           child: Container(

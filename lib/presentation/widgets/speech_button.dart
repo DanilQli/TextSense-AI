@@ -1,6 +1,8 @@
 //speech_button.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/services/translation_service.dart';
+import '../../core/utils/translation_utils.dart';
 import '../bloc/chat/chat_bloc.dart';
 import '../../core/constants/app_constants.dart';
 
@@ -92,7 +94,7 @@ class _SpeechButtonState extends State<SpeechButton> with SingleTickerProviderSt
                 }
               }
             },
-            tooltip: widget.isListening ? 'Остановить запись' : 'Записать голос',
+            tooltip: widget.isListening ? Tr.get(TranslationKeys.stopRecording) : Tr.get(TranslationKeys.recordVoice),
           ),
         );
       },

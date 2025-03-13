@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/translation_utils.dart';
 import '../../bloc/chat/chat_bloc.dart';
 import '../../bloc/language/language_bloc.dart';
 import 'save_chat_dialog.dart';
@@ -17,7 +18,6 @@ class NewChatDialog extends StatelessWidget {
         : 'en';
 
     final chatBloc = context.read<ChatBloc>();
-    final translations = TranslationService();
 
     // Проверяем, есть ли сообщения в текущем чате
     final hasMessages = chatBloc.messages.isNotEmpty;
@@ -33,24 +33,24 @@ class NewChatDialog extends StatelessWidget {
 
     // Если есть сообщения, спрашиваем о сохранении текущего чата
     return AlertDialog(
-      title: Text(translations.translate(TranslationKeys.newChatConfirmation, languageCode)),
-      content: Text(translations.translate(TranslationKeys.saveCurrentChatQuestion, languageCode)),
+      title: Text(Tr.get(TranslationKeys.newChatConfirmation, languageCode)),
+      content: Text(Tr.get(TranslationKeys.saveCurrentChatQuestion, languageCode)),
       actions: [
         TextButton(
-          child: Text(translations.translate(TranslationKeys.dontSave, languageCode)),
+          child: Text(Tr.get(TranslationKeys.dontSave, languageCode)),
           onPressed: () {
             Navigator.pop(context);
             chatBloc.add(ClearChatEvent());
           },
         ),
         TextButton(
-          child: Text(translations.translate(TranslationKeys.cancel, languageCode)),
+          child: Text(Tr.get(TranslationKeys.cancel, languageCode)),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         TextButton(
-          child: Text(translations.translate(TranslationKeys.saveAndCreate, languageCode)),
+          child: Text(Tr.get(TranslationKeys.saveAndCreate, languageCode)),
           onPressed: () {
             Navigator.pop(context);
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/services/translation_service.dart';
+import '../../core/utils/translation_utils.dart';
 import '../bloc/chat/chat_bloc.dart';
 import '../widgets/chat_input.dart';
 import '../widgets/message_bubble.dart';
@@ -33,13 +35,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _showMessageActions(BuildContext context, Message message) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => MessageActionsMenu(message: message),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,7 +65,16 @@ class _ChatScreenState extends State<ChatScreen> {
           return Column(
             children: [
               Expanded(
-                child: ListView.builder(
+                child: messages.isEmpty
+                    ? Center(
+                  child: Text(
+                      Tr.t(TranslationKeys.noMessages),
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                    ),
+                  ),
+                )
+                    : ListView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.all(12),
                   itemCount: messages.length,
@@ -92,6 +96,18 @@ class _ChatScreenState extends State<ChatScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  void _showMessageActions(BuildContext context, Message message) {
+    final chatBloc = context.read<ChatBloc>();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (dialogContext) => BlocProvider.value(
+        value: chatBloc,
+        child: MessageActionsMenu(message: message),
       ),
     );
   }

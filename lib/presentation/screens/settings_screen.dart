@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../core/utils/translation_utils.dart';
 import '../bloc/theme/theme_bloc.dart';
 import '../bloc/language/language_bloc.dart';
 import '../widgets/settings_section.dart';
@@ -25,7 +26,7 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("settings"),
+        title: Text(Tr.get(TranslationKeys.settings)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
@@ -35,21 +36,21 @@ class SettingsScreen extends StatelessWidget {
             title: "appearance",
             children: [
               ListTile(
-                title: Text("theme"),
+                title: Text(Tr.get(TranslationKeys.theme)),
                 trailing: DropdownButton<ThemeMode>(
                   value: themeMode,
                   items: [
                     DropdownMenuItem(
                       value: ThemeMode.system,
-                      child: Text("systemTheme"),
+                      child: Text(Tr.get(TranslationKeys.systemTheme)),
                     ),
                     DropdownMenuItem(
                       value: ThemeMode.light,
-                      child: Text("systemTheme"),
+                      child: Text(Tr.get(TranslationKeys.lightTheme)),
                     ),
                     DropdownMenuItem(
                       value: ThemeMode.dark,
-                      child: Text("darkTheme"),
+                      child: Text(Tr.get(TranslationKeys.darkTheme)),
                     ),
                   ],
                   onChanged: (value) {
@@ -95,10 +96,10 @@ class SettingsScreen extends StatelessWidget {
 
           // Секция информации о приложении
           SettingsSection(
-            title: "about",
+            title: Tr.get(TranslationKeys.about),
             children: [
               ListTile(
-                title: Text("version"),
+                title: Text(Tr.get(TranslationKeys.version)),
                 trailing: const Text('1.0.0'),
               ),
             ],

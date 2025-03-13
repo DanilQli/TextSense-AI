@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/utils/translation_utils.dart';
 import '../../bloc/language/language_bloc.dart';
 import '../../../core/services/translation_service.dart';
 
@@ -30,10 +31,9 @@ class _LanguageSelectionDialogState extends State<LanguageSelectionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final translations = TranslationService();
 
     return AlertDialog(
-      title: Text(translations.translate(TranslationKeys.changeLanguage, _selectedLanguageCode)),
+      title: Text(Tr.get(TranslationKeys.changeLanguage, _selectedLanguageCode)),
       content: SingleChildScrollView(
         child: ListBody(
           children: widget.availableLanguages.entries.map((language) {
@@ -52,11 +52,11 @@ class _LanguageSelectionDialogState extends State<LanguageSelectionDialog> {
       ),
       actions: <Widget>[
         TextButton(
-          child: Text(translations.translate(TranslationKeys.cancel, _selectedLanguageCode)),
+          child: Text(Tr.get(TranslationKeys.cancel, _selectedLanguageCode)),
           onPressed: () => Navigator.of(context).pop(),
         ),
         TextButton(
-          child: Text(translations.translate(TranslationKeys.save, _selectedLanguageCode)),
+          child: Text(Tr.get(TranslationKeys.save, _selectedLanguageCode)),
           onPressed: () {
             if (widget.onLanguageSelected != null) {
               widget.onLanguageSelected!(_selectedLanguageCode);

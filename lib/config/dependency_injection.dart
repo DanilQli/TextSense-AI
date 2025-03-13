@@ -4,6 +4,7 @@ import 'package:speech_to_text/speech_to_text.dart';
 import 'package:translator/translator.dart';
 
 import '../core/logger/app_logger.dart';
+import '../data/datasources/device/speech_datasource.dart';
 import '../data/datasources/local/chat_local_datasource.dart';
 import '../data/datasources/local/preferences_datasource.dart';
 import '../data/datasources/remote/classifier_datasource.dart';
@@ -14,6 +15,8 @@ import '../domain/repositories/chat_repository.dart';
 import '../domain/repositories/classifier_repository_impl.dart';
 import '../domain/repositories/settings_repository.dart';
 import '../domain/repositories/classifier_repository.dart';
+import '../domain/repositories/speech_repository.dart';
+import '../domain/repositories/speech_repository_impl.dart';
 import '../domain/repositories/translator_repository.dart';
 import '../domain/repositories/translator_repository_impl.dart';
 import '../domain/usecases/chat/send_message.dart';
@@ -24,6 +27,7 @@ import '../domain/usecases/settings/get_settings.dart';
 import '../domain/usecases/settings/toggle_theme.dart';
 import '../domain/usecases/settings/change_language.dart';
 import '../domain/usecases/classification/classify_text.dart';
+import '../domain/usecases/speech/listen_to_speech.dart';
 import '../presentation/bloc/theme/theme_bloc.dart';
 import '../presentation/bloc/language/language_bloc.dart';
 import '../presentation/bloc/chat/chat_bloc.dart';
@@ -60,6 +64,13 @@ Future<void> initDependencies() async {
           () => TranslatorDataSourceImpl(translator: getIt())
   );
 
+  // Регистрируем SpeechDataSource, если он еще не зарегистрирован
+  if (!getIt.isRegistered<SpeechDataSource>()) {
+    getIt.registerLazySingleton<SpeechDataSource>(
+            () => SpeechDataSourceImpl(speech: getIt<SpeechToText>())
+    );
+  }
+
   // Репозитории
   getIt.registerLazySingleton<SettingsRepository>(
           () => SettingsRepositoryImpl(dataSource: getIt())
@@ -74,6 +85,13 @@ Future<void> initDependencies() async {
           () => TranslatorRepositoryImpl(dataSource: getIt())
   );
 
+  // Регистрируем SpeechRepository, если он еще не зарегистрирован
+  if (!getIt.isRegistered<SpeechRepository>()) {
+    getIt.registerLazySingleton<SpeechRepository>(
+            () => SpeechRepositoryImpl(dataSource: getIt<SpeechDataSource>())
+    );
+  }
+
   // Сценарии использования
   getIt.registerLazySingleton(() => GetSettings(getIt()));
   getIt.registerLazySingleton(() => ToggleTheme(getIt()));
@@ -83,6 +101,11 @@ Future<void> initDependencies() async {
   getIt.registerLazySingleton(() => SaveChat(getIt()));
   getIt.registerLazySingleton(() => DeleteChat(getIt()));
   getIt.registerLazySingleton(() => ClassifyText(getIt()));
+
+  // Регистрируем ListenToSpeech, если он еще не зарегистрирован
+  if (!getIt.isRegistered<ListenToSpeech>()) {
+    getIt.registerLazySingleton(() => ListenToSpeech(getIt<SpeechRepository>()));
+  }
 
   // BLoCs
   getIt.registerFactory(() => ThemeBloc(toggleTheme: getIt(), getSettings: getIt()));
