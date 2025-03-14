@@ -13,13 +13,13 @@ class ThemeToggleButton extends StatelessWidget {
   final String? tooltip;
 
   const ThemeToggleButton({
-    Key? key,
+    super.key,
     required this.isDarkMode,
     this.onPressed,
     this.size = 24.0,
     this.color,
     this.tooltip,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

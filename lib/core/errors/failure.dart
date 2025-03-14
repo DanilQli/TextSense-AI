@@ -11,46 +11,37 @@ abstract class Failure extends Equatable {
 }
 
 class ServerFailure extends Failure {
-  const ServerFailure({required String message, int? code})
-      : super(message: message, code: code);
+  const ServerFailure({required super.message, super.code});
 }
 
 class NetworkFailure extends Failure {
-  const NetworkFailure({required String message})
-      : super(message: message);
+  const NetworkFailure({required super.message});
 }
 
 class CacheFailure extends Failure {
-  const CacheFailure({required String message})
-      : super(message: message);
+  const CacheFailure({required super.message});
 }
 
 class FileOperationFailure extends Failure {
-  const FileOperationFailure({required String message})
-      : super(message: message);
+  const FileOperationFailure({required super.message});
 }
 
 class ValidationFailure extends Failure {
-  const ValidationFailure({required String message})
-      : super(message: message);
+  const ValidationFailure({required super.message});
 }
 
 class ClassificationFailure extends Failure {
-  const ClassificationFailure({required String message})
-      : super(message: message);
+  const ClassificationFailure({required super.message});
 }
 
 class TranslationFailure extends Failure {
-  const TranslationFailure({required String message})
-      : super(message: message);
+  const TranslationFailure({required super.message});
 }
 
 class PermissionFailure extends Failure {
-  const PermissionFailure({required String message})
-      : super(message: message);
+  const PermissionFailure({required super.message});
 }
 
 class UnknownFailure extends Failure {
-  const UnknownFailure({required String message})
-      : super(message: message);
+  const UnknownFailure({required super.message});
 }

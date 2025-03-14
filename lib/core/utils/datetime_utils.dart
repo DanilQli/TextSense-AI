@@ -1,5 +1,7 @@
+import 'package:coursework/core/utils/translation_utils.dart';
 import 'package:intl/intl.dart';
 import '../constants/app_constants.dart';
+import '../services/translation_service.dart';
 
 class DateTimeUtils {
   /// Форматирует дату и время по указанному формату
@@ -46,13 +48,13 @@ class DateTimeUtils {
       return 'только что';
     } else if (difference.inMinutes < 60) {
       final minutes = difference.inMinutes;
-      return '$minutes ${_getPluralForm(minutes, 'минуту', 'минуты', 'минут')} назад';
+      return '$minutes ${_getPluralForm(minutes, Tr.get(TranslationKeys.minute1), Tr.get(TranslationKeys.minute2), Tr.get(TranslationKeys.minute3))} ${Tr.get(TranslationKeys.back)}';
     } else if (difference.inHours < 24) {
       final hours = difference.inHours;
-      return '$hours ${_getPluralForm(hours, 'час', 'часа', 'часов')} назад';
+      return '$hours ${_getPluralForm(hours, Tr.get(TranslationKeys.hour1), Tr.get(TranslationKeys.hour2), Tr.get(TranslationKeys.hour3))} ${Tr.get(TranslationKeys.back)}';
     } else if (difference.inDays < 7) {
       final days = difference.inDays;
-      return '$days ${_getPluralForm(days, 'день', 'дня', 'дней')} назад';
+      return '$days ${_getPluralForm(days, Tr.get(TranslationKeys.day1), Tr.get(TranslationKeys.day2), Tr.get(TranslationKeys.day3))} ${Tr.get(TranslationKeys.back)}';
     } else {
       return formatDateTime(dateTime);
     }

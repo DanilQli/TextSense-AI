@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../core/services/translation_service.dart';
+import '../core/utils/translation_utils.dart';
 import '../presentation/screens/chat_screen.dart';
 import '../presentation/screens/settings_screen.dart';
 import '../presentation/screens/chat_list_screen.dart';
@@ -42,7 +44,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => Scaffold(
             body: Center(
-              child: Text('Маршрут не найден: ${settings.name}'),
+              child: Text('${Tr.get(TranslationKeys.routeNotFound)}${settings.name}'),
             ),
           ),
         );

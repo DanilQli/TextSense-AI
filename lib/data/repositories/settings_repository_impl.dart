@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
+import '../../app.dart';
 import '../../domain/repositories/settings_repository.dart';
 import '../../domain/entities/user_settings.dart';
 import '../../core/errors/failure.dart';
@@ -14,11 +15,11 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<Either<Failure, UserSettings>> getSettings() async {
     try {
-      final themeMode = await dataSource.getThemeMode();
+      final customThemeMode = await dataSource.getThemeMode();
       final languageCode = await dataSource.getLanguageCode();
 
       final settings = UserSettings(
-        themeMode: themeMode,
+        customThemeMode: customThemeMode,
         languageCode: languageCode,
       );
 
@@ -31,10 +32,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<Either<Failure, ThemeMode>> getThemeMode() async {
+  Future<Either<Failure, CustomThemeMode>> getThemeMode() async {
     try {
-      final themeMode = await dataSource.getThemeMode();
-      return Right(themeMode);
+      final customThemeMode = await dataSource.getThemeMode();
+      return Right(customThemeMode);
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message));
     } catch (e) {
@@ -43,9 +44,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> saveThemeMode(ThemeMode themeMode) async {
+  Future<Either<Failure, bool>> saveThemeMode(CustomThemeMode customThemeMode) async {
     try {
-      final success = await dataSource.saveThemeMode(themeMode);
+      final success = await dataSource.saveThemeMode(customThemeMode);
       return Right(success);
     } on CacheException catch (e) {
       return Left(CacheFailure(message: e.message));

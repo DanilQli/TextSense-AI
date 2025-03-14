@@ -10,7 +10,7 @@ class DeleteChat {
   Future<Either<Failure, bool>> call(String chatName) async {
     // Проверяем имя чата
     if (chatName.trim().isEmpty) {
-      return Left(ValidationFailure(
+      return const Left(ValidationFailure(
           message: 'Имя чата не может быть пустым'
       ));
     }

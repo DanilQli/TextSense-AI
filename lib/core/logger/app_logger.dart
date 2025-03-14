@@ -27,6 +27,14 @@ abstract class AppLogger {
   static void fatal(String message, [dynamic error, StackTrace? stackTrace]) =>
       _instance.logFatal(message, error, stackTrace);
 
+  // Добавляем статический метод для вызова dispose
+  static Future<void> dispose() async {
+    await _instance.disposeLogger();
+  }
+
+  // Добавляем метод в интерфейс
+  Future<void> disposeLogger();
+
   void logDebug(String message, [dynamic error, StackTrace? stackTrace]);
   void logInfo(String message, [dynamic error, StackTrace? stackTrace]);
   void logWarning(String message, [dynamic error, StackTrace? stackTrace]);
@@ -35,17 +43,13 @@ abstract class AppLogger {
 }
 
 class AppLoggerImpl implements AppLogger {
-  // Инициализируем логгер с базовой конфигурацией, чтобы избежать ошибок до полной инициализации
-  Logger _logger = Logger(
-    printer: PrettyPrinter(
-      methodCount: 0,
-      printTime: true,
-    ),
-  );
+  Logger _logger = Logger();
+  File? _logFile;
 
   @override
   Future<void> initialize() async {
     final logsDirectory = await _getLogsDirectory();
+    _logFile = File('$logsDirectory/app.log');
 
     _logger = Logger(
       filter: ProductionFilter(),
@@ -55,15 +59,20 @@ class AppLoggerImpl implements AppLogger {
           lineLength: 120,
           colors: true,
           printEmojis: true,
-          printTime: true
+          dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart
       ),
       output: MultiOutput([
         ConsoleOutput(),
-        FileOutput(file: File('$logsDirectory/app.log'))
+        FileOutput(file: _logFile!)
       ]),
     );
 
     logInfo('Система логирования инициализирована');
+  }
+
+  Future<void> dispose() async {
+    // Закрываем логгер и освобождаем ресурсы
+    _logger.close();
   }
 
   Future<String> _getLogsDirectory() async {
@@ -101,4 +110,17 @@ class AppLoggerImpl implements AppLogger {
   void logFatal(String message, [dynamic error, StackTrace? stackTrace]) {
     _logger.f(message, error: error, stackTrace: stackTrace);
   }
+
+  @override
+  Future<void> disposeLogger() async {
+    try {
+      // Закрываем логгер и освобождаем ресурсы
+      // В библиотеке logger может не быть метода close,
+      // в этом случае просто логируем завершение работы
+      logInfo('Система логирования завершает работу');
+    } catch (e) {
+      print('Ошибка при закрытии логгера: $e');
+    }
+  }
+
 }

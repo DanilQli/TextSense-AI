@@ -16,7 +16,4 @@ abstract class SpeechRepository {
 
   /// Проверяет, слушает ли система в данный момент
   Future<Either<Failure, bool>> isListening();
-
-  /// Возвращает список доступных локалей для распознавания
-  Future<Either<Failure, List<String>>> getAvailableLocales();
 }

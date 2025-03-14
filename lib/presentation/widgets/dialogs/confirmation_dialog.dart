@@ -28,17 +28,10 @@ class ConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Получаем текущий язык
-    final languageState = context.read<LanguageBloc>().state;
-    final languageCode = languageState is LanguageLoaded
-        ? languageState.languageCode
-        : 'en';
-
-
     return AlertDialog(
-      title: Text(Tr.get(titleKey, languageCode)),
+      title: Text(Tr.get(titleKey)),
       content: Text(
-          message ?? Tr.get(messageKey, languageCode)
+          message ?? Tr.get(messageKey)
       ),
       actions: [
         TextButton(
@@ -48,7 +41,7 @@ class ConfirmationDialog extends StatelessWidget {
               onCancel!();
             }
           },
-          child: Text(Tr.get(cancelKey, languageCode)),
+          child: Text(Tr.get(cancelKey)),
         ),
         TextButton(
           onPressed: () {
@@ -58,9 +51,9 @@ class ConfirmationDialog extends StatelessWidget {
             }
           },
           style: isDanger ? ButtonStyle(
-            foregroundColor: MaterialStateProperty.all(Colors.red),
+            foregroundColor: WidgetStateProperty.all(Colors.red),
           ) : null,
-          child: Text(Tr.get(confirmKey, languageCode)),
+          child: Text(Tr.get(confirmKey)),
         ),
       ],
     );

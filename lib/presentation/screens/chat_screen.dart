@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/services/translation_service.dart';
 import '../../core/utils/translation_utils.dart';
 import '../bloc/chat/chat_bloc.dart';
+import '../bloc/language/language_bloc.dart';
 import '../widgets/chat_input.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/chat_app_bar.dart';
@@ -67,11 +68,15 @@ class _ChatScreenState extends State<ChatScreen> {
               Expanded(
                 child: messages.isEmpty
                     ? Center(
-                  child: Text(
-                      Tr.t(TranslationKeys.noMessages),
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
-                    ),
+                  child: BlocBuilder<LanguageBloc, LanguageState>(
+                    builder: (context, state) {
+                      return Text(
+                        Tr.get(TranslationKeys.noMessages),
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.5),
+                        ),
+                      );
+                    },
                   ),
                 )
                     : ListView.builder(
@@ -111,4 +116,5 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
+
 }

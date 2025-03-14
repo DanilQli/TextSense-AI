@@ -41,7 +41,7 @@ class MessageModel extends Message {
     if (!json.containsKey('text') ||
         !json.containsKey('isUser') ||
         !json.containsKey('timestamp')) {
-      throw FormatException('Некорректный формат JSON для Message');
+      throw const FormatException('Некорректный формат JSON для Message');
     }
 
     // Обрабатываем classificationResult

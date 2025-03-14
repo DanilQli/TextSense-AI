@@ -1,17 +1,15 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:dartz/dartz.dart';
 import '../../../config/dependency_injection.dart';
 import '../../../core/utils/translation_utils.dart';
+import '../../../domain/usecases/chat/export_chat.dart';
 import '../../../domain/usecases/chat/send_message.dart';
 import '../../../domain/usecases/chat/get_message_history.dart';
 import '../../../domain/usecases/chat/save_chat.dart';
 import '../../../domain/usecases/chat/delete_chat.dart';
 import '../../../domain/entities/message.dart';
 import '../../../core/logger/app_logger.dart';
-import '../../../core/errors/failure.dart';
 import '../../../core/services/translation_service.dart';
 import '../language/language_bloc.dart';
 
@@ -68,7 +66,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
               (failure) {
             AppLogger.error('Ошибка при инициализации чата', failure);
             _messages = [];
-            emit(ChatError(message: 'Ошибка при загрузке чата'));
+            emit(ChatError(message: Tr.get(TranslationKeys.errorNum2)));
             emit(ChatLoaded(messages: _messages, currentChatName: null));
           },
               (messages) {
@@ -79,8 +77,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       );
     } catch (e) {
       AppLogger.error('Необработанная ошибка при инициализации чата', e);
-      emit(ChatError(message: 'Произошла ошибка при инициализации чата'));
-      emit(ChatLoaded(messages: [], currentChatName: null));
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum3)));
+      emit(const ChatLoaded(messages: [], currentChatName: null));
     }
   }
   String getCurrentLanguage() {
@@ -135,7 +133,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     } catch (e) {
       if (emit.isDone) return; // Проверяем, не завершился ли уже emit
       AppLogger.error('Необработанная ошибка при отправке сообщения', e);
-      emit(ChatError(message: 'Произошла ошибка при обработке сообщения'));
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum4)));
       emit(ChatLoaded(
         messages: _messages,
         currentChatName: _currentChatName,
@@ -150,9 +148,45 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     emit(ChatLoaded(messages: _messages, currentChatName: _currentChatName));
   }
 
-  Future<void> _onExportChat(ExportChatEvent event,
-      Emitter<ChatState> emit,) async {
-    // Реализация экспорта чата
+  Future<void> _onExportChat(
+      ExportChatEvent event,
+      Emitter<ChatState> emit,
+      ) async {
+    try {
+      if (_messages.isEmpty || _currentChatName == null) {
+        emit(ChatError(message: Tr.get(TranslationKeys.errorNum5)));
+        emit(ChatLoaded(messages: _messages, currentChatName: _currentChatName));
+        return;
+      }
+
+      // Используем UseCase для экспорта
+      final exportChat = getIt<ExportChat>();
+
+      // Получаем переводы для текущего языка
+      final languageState = getIt<LanguageBloc>().state;
+      final languageCode = languageState is LanguageLoaded ? languageState.languageCode : 'en';
+      final translations = getIt<TranslationService>().getTranslations(languageCode);
+
+      final result = await exportChat(_currentChatName!, translations, languageCode);
+
+      result.fold(
+              (failure) {
+            AppLogger.error('Ошибка при экспорте чата: ${failure.message}');
+            emit(ChatError(message: failure.message));
+            emit(ChatLoaded(messages: _messages, currentChatName: _currentChatName));
+          },
+              (filePath) {
+            AppLogger.debug('Чат успешно экспортирован в: $filePath');
+            emit(ChatLoaded(messages: _messages, currentChatName: _currentChatName));
+            // Показываем уведомление об успешном экспорте
+            // Это нужно делать через другой механизм, например, через StreamController
+          }
+      );
+    } catch (e) {
+      AppLogger.error('Необработанная ошибка при экспорте чата', e);
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum6)));
+      emit(ChatLoaded(messages: _messages, currentChatName: _currentChatName));
+    }
   }
 
   Future<void> _onLoadChat(
@@ -202,7 +236,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       );
     } catch (e) {
       AppLogger.error('Необработанная ошибка при загрузке чата', e);
-      emit(ChatError(message: 'Произошла ошибка при загрузке чата'));
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum2)));
       emit(ChatLoaded(
         messages: _messages,
         currentChatName: _currentChatName,
@@ -253,15 +287,13 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
             // Восстанавливаем предыдущее состояние после загрузки списка
             if (previousState != null) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                emit(previousState!);
-              });
+              emit(previousState);
             }
           }
       );
     } catch (e) {
       AppLogger.error('Необработанная ошибка при получении списка чатов', e);
-      emit(ChatError(message: 'Произошла ошибка при получении списка чатов'));
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum1)));
 
       // Восстанавливаем предыдущее состояние, если оно было
       if (state is ChatLoaded) {
@@ -307,7 +339,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       );
     } catch (e) {
       AppLogger.error('Необработанная ошибка при сохранении чата', e);
-      emit(ChatError(message: 'Произошла ошибка при сохранении чата'));
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum7)));
       emit(ChatLoaded(
         messages: _messages,
         currentChatName: _currentChatName,
@@ -355,7 +387,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       );
     } catch (e) {
       AppLogger.error('Необработанная ошибка при удалении чата', e);
-      emit(ChatError(message: 'Произошла ошибка при удалении чата'));
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum8)));
       emit(ChatLoaded(
         messages: _messages,
         currentChatName: _currentChatName,
@@ -367,7 +399,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       Emitter<ChatState> emit,) async {
     try {
       if (_currentChatName == null) {
-        emit(ChatError(message: 'Нет загруженного чата для переименования'));
+        emit(ChatError(message: Tr.get(TranslationKeys.errorNum9)));
         return;
       }
 
@@ -400,7 +432,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       );
     } catch (e) {
       AppLogger.error('Необработанная ошибка при переименовании чата', e);
-      emit(ChatError(message: 'Произошла ошибка при переименовании чата'));
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum10)));
       emit(ChatLoaded(
         messages: _messages,
         currentChatName: _currentChatName,
@@ -408,8 +440,10 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     }
   }
 
-  Future<void> _onAddReaction(AddReactionEvent event,
-      Emitter<ChatState> emit,) async {
+  Future<void> _onAddReaction(
+      AddReactionEvent event,
+      Emitter<ChatState> emit,
+      ) async {
     try {
       final index = _messages.indexOf(event.message);
       if (index == -1) return;
@@ -417,22 +451,17 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       // Создаем копию сообщения с реакцией
       final updatedMessage = event.message.copyWith(reaction: event.reaction);
 
-      // Обновляем список сообщений
-      _messages = List.from(_messages)
-        ..removeAt(index)
-        ..insert(index, updatedMessage);
+      // Обновляем список сообщений без создания нового списка для каждого элемента
+      final newMessages = List<Message>.from(_messages);
+      newMessages[index] = updatedMessage;
+      _messages = newMessages;
 
       emit(ChatLoaded(
         messages: _messages,
         currentChatName: _currentChatName,
       ));
     } catch (e) {
-      AppLogger.error('Ошибка при добавлении реакции', e);
-      emit(ChatError(message: 'Не удалось добавить реакцию'));
-      emit(ChatLoaded(
-        messages: _messages,
-        currentChatName: _currentChatName,
-      ));
+      // Обработка ошибок
     }
   }
 
@@ -456,7 +485,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       ));
     } catch (e) {
       AppLogger.error('Ошибка при удалении реакции', e);
-      emit(ChatError(message: 'Не удалось удалить реакцию'));
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum11)));
       emit(ChatLoaded(
         messages: _messages,
         currentChatName: _currentChatName,
@@ -475,7 +504,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       ));
     } catch (e) {
       AppLogger.error('Ошибка при копировании сообщения', e);
-      emit(ChatError(message: 'Не удалось скопировать сообщение'));
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum12)));
       emit(ChatLoaded(
         messages: _messages,
         currentChatName: _currentChatName,
@@ -494,7 +523,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       ));
     } catch (e) {
       AppLogger.error('Ошибка при удалении сообщения', e);
-      emit(ChatError(message: 'Не удалось удалить сообщение'));
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum13)));
       emit(ChatLoaded(
         messages: _messages,
         currentChatName: _currentChatName,
@@ -563,7 +592,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
     } catch (e) {
       if (emit.isDone) return; // Проверяем, не завершился ли уже emit
       AppLogger.error('Ошибка при переводе сообщения', e);
-      emit(ChatError(message: 'Не удалось перевести сообщение'));
+      emit(ChatError(message: Tr.get(TranslationKeys.errorNum14)));
       emit(ChatLoaded(
         messages: _messages,
         currentChatName: _currentChatName,

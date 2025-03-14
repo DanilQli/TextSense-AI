@@ -1,6 +1,8 @@
 //chat_app_bar.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../app.dart';
+import '../../config/routes.dart';
 import '../../core/utils/translation_utils.dart';
 import '../bloc/chat/chat_bloc.dart';
 import '../bloc/theme/theme_bloc.dart';
@@ -12,12 +14,11 @@ import '../../core/constants/app_constants.dart';
 import '../../core/services/translation_service.dart';
 
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const ChatAppBar({Key? key}) : super(key: key);
+  const ChatAppBar({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
-  @override
   @override
   Widget build(BuildContext context) {
     // Используем BlocBuilder для реагирования на изменения состояния чата
@@ -25,24 +26,18 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       buildWhen: (previous, current) =>
       (previous is ChatLoaded && current is ChatLoaded &&
           previous.currentChatName != current.currentChatName) ||
-          (!(previous is ChatLoaded) && current is ChatLoaded) ||
-          (previous is ChatLoaded && !(current is ChatLoaded)),
+          (previous is! ChatLoaded && current is ChatLoaded) ||
+          (previous is ChatLoaded && current is! ChatLoaded),
       builder: (context, chatState) {
         // Получаем текущее имя чата из состояния
         final String? currentChatName = chatState is ChatLoaded
             ? chatState.currentChatName
             : null;
 
-        // Получаем текущий язык
-        final languageState = context.watch<LanguageBloc>().state;
-        final languageCode = languageState is LanguageLoaded
-            ? languageState.languageCode
-            : 'en';
-
         // Получаем текущую тему
         final themeState = context.watch<ThemeBloc>().state;
         final isDarkMode = themeState is ThemeLoaded
-            ? themeState.themeMode == ThemeMode.dark
+            ? themeState.customThemeMode == CustomThemeMode.dark
             : false;
 
         return AppBar(
@@ -55,7 +50,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  currentChatName ?? Tr.t(TranslationKeys.appTitle),
+                  currentChatName ?? Tr.get(TranslationKeys.appTitle),
                   style: const TextStyle(fontSize: 18),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -66,7 +61,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             IconButton(
               icon: const Icon(Icons.download),
               onPressed: () => context.read<ChatBloc>().add(ExportChatEvent()),
-              tooltip: Tr.t(TranslationKeys.exportChat),
+              tooltip: Tr.get(TranslationKeys.exportChat),
             ),
             IconButton(
               icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
@@ -76,7 +71,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
               itemBuilder: (BuildContext context) => [
                 PopupMenuItem<String>(
                   value: 'new_chat',
-                  child: Text(Tr.t(TranslationKeys.newChat)),
+                  child: Text(Tr.get(TranslationKeys.newChat)),
                   onTap: () => Future.delayed(
                     Duration.zero,
                         () => showDialog(
@@ -90,7 +85,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 ),
                 PopupMenuItem<String>(
                   value: 'save_chat',
-                  child: Text(Tr.t(TranslationKeys.saveChat)),
+                  child: Text(Tr.get(TranslationKeys.saveChat)),
                   onTap: () => Future.delayed(
                     Duration.zero,
                         () => showDialog(
@@ -108,7 +103,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 if (currentChatName != null)
                   PopupMenuItem<String>(
                     value: 'rename_chat',
-                    child: Text(Tr.t(TranslationKeys.renameChat)),
+                    child: Text(Tr.get(TranslationKeys.renameChat)),
                     onTap: () => Future.delayed(
                       Duration.zero,
                           () => showDialog(
@@ -125,7 +120,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 PopupMenuItem<String>(
                   value: 'load_chat',
-                  child: Text(Tr.t(TranslationKeys.uploadChat)),
+                  child: Text(Tr.get(TranslationKeys.uploadChat)),
                   onTap: () => Future.delayed(
                     Duration.zero,
                         () => showDialog(
@@ -138,12 +133,9 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                 ),
                 PopupMenuItem<String>(
-                  value: 'language',
-                  child: Text(Tr.t(TranslationKeys.changeLanguage)),
-                  onTap: () => Future.delayed(
-                    Duration.zero,
-                        () => _showLanguageMenu(context, languageCode),
-                  ),
+                  value: 'settings',
+                  child: Text(Tr.get(TranslationKeys.settings)),
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.settings),
                 ),
               ],
             ),
@@ -153,43 +145,4 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  void _showLanguageMenu(BuildContext context, String currentLanguageCode) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(Tr.t(TranslationKeys.changeLanguage)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<String>(
-                value: 'en',
-                groupValue: currentLanguageCode,
-                onChanged: (value) {
-                  context.read<LanguageBloc>().add(ChangeLanguageEvent(value!));
-                  Navigator.pop(context);
-                },
-                title: const Text('English'),
-              ),
-              RadioListTile<String>(
-                value: 'ru',
-                groupValue: currentLanguageCode,
-                onChanged: (value) {
-                  context.read<LanguageBloc>().add(ChangeLanguageEvent(value!));
-                  Navigator.pop(context);
-                },
-                title: const Text('Русский'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(Tr.t(TranslationKeys.cancel)),
-            ),
-          ],
-        );
-      },
-    );
-  }
 }

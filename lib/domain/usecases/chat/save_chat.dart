@@ -11,14 +11,14 @@ class SaveChat {
   Future<Either<Failure, bool>> call(String chatName, List<Message> messages) async {
     // Проверяем имя чата
     if (chatName.trim().isEmpty) {
-      return Left(ValidationFailure(
+      return const Left(ValidationFailure(
           message: 'Имя чата не может быть пустым'
       ));
     }
 
     // Проверяем наличие сообщений
     if (messages.isEmpty) {
-      return Left(ValidationFailure(
+      return const Left(ValidationFailure(
           message: 'Список сообщений не может быть пустым'
       ));
     }

@@ -33,7 +33,7 @@ class ClassifierRepositoryImpl implements ClassifierRepository {
       ));
     } catch (e) {
       AppLogger.error('Неизвестная ошибка при классификации текста', e);
-      return Left(UnknownFailure(
+      return const Left(UnknownFailure(
         message: 'Произошла ошибка при классификации текста',
       ));
     }

@@ -13,11 +13,11 @@ class MessageBubble extends StatelessWidget {
   final TextStyle? textStyle;
 
   const MessageBubble({
-    Key? key,
+    super.key,
     required this.message,
     required this.onTap,
     this.textStyle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

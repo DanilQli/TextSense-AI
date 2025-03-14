@@ -38,7 +38,7 @@ class TranslatorRepositoryImpl implements TranslatorRepository {
       ));
     } catch (e) {
       AppLogger.error('Неизвестная ошибка при переводе текста', e);
-      return Left(UnknownFailure(
+      return const Left(UnknownFailure(
         message: 'Произошла ошибка при переводе текста',
       ));
     }
@@ -55,22 +55,10 @@ class TranslatorRepositoryImpl implements TranslatorRepository {
       return Right(result);
     } catch (e) {
       AppLogger.error('Ошибка при определении языка', e);
-      return Left(UnknownFailure(
+      return const Left(UnknownFailure(
         message: 'Произошла ошибка при определении языка текста',
       ));
     }
   }
 
-  @override
-  Future<Either<Failure, List<String>>> getSupportedLanguages() async {
-    try {
-      final result = await dataSource.getSupportedLanguages();
-      return Right(result);
-    } catch (e) {
-      AppLogger.error('Ошибка при получении списка языков', e);
-      return Left(UnknownFailure(
-        message: 'Произошла ошибка при получении списка поддерживаемых языков',
-      ));
-    }
-  }
 }

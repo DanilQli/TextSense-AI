@@ -28,7 +28,7 @@ class ListenToSpeech {
         );
 
         if (!initialized) {
-          return Left(UnknownFailure(
+          return const Left(UnknownFailure(
               message: 'Не удалось инициализировать распознавание речи'
           ));
         }

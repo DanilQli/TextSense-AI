@@ -1,4 +1,6 @@
 import 'package:dartz/dartz.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/constants/classification_constants.dart';
 import '../../../core/errors/failure.dart';
 import '../../../core/services/translation_service.dart';
 import '../../../core/utils/translation_utils.dart';
@@ -13,6 +15,8 @@ class SendMessage {
   final ChatRepository chatRepository;
   final ClassifierRepository classifierRepository;
   final TranslatorRepository translatorRepository;
+  // Кэш для результатов softmax
+  final Map<String, List<double>> _softmaxCache = {};
 
   SendMessage(
       this.chatRepository,
@@ -25,6 +29,16 @@ class SendMessage {
       // Получаем текущие сообщения
       final messagesResult = await chatRepository.loadChat('current');
       List<Message> currentMessages = [];
+
+      // Проверка на максимальную длину
+      if (text.length > AppConstants.maxTextLength) {
+        return const Left(ValidationFailure(message: 'Текст сообщения слишком длинный'));
+      }
+
+      // Проверка на наличие запрещенных символов или последовательностей
+      if (text.contains(RegExp(r'[^\p{L}\p{N}\p{P}\p{Z}]', unicode: true))) {
+        return const Left(ValidationFailure(message: 'Текст содержит недопустимые символы'));
+      }
 
       messagesResult.fold(
               (failure) {
@@ -72,7 +86,7 @@ class SendMessage {
       );
 
       // Формируем результат классификации в виде текста
-      String resultText = 'Не удалось классифицировать текст';
+      String resultText = Tr.get(TranslationKeys.couldNotClassifyText);
 
       if (classification != null && emotionClassification != null) {
         resultText = _formatClassificationResult(classification, emotionClassification);
@@ -107,7 +121,7 @@ class SendMessage {
       ) {
     // Проверяем на null в начале метода
     if (classification == null || emotionClassification == null) {
-      return 'Не удалось классифицировать текст';
+      return Tr.get(TranslationKeys.couldNotClassifyText);
     }
     // Реализация форматирования результатов классификации
 
@@ -152,19 +166,9 @@ class SendMessage {
       }
     }
 
-    // Возвращаем соответствующую метку
-    final labels = [
-      'ARTS & CULTURE', 'BUSINESS & FINANCES', 'COMEDY', 'CRIME',
-      'DIVORCE', 'EDUCATION', 'ENTERTAINMENT', 'ENVIRONMENT',
-      'FOOD & DRINK', 'GROUPS VOICES', 'HOME & LIVING', 'IMPACT',
-      'MEDIA', 'OTHER', 'PARENTING', 'POLITICS', 'RELIGION',
-      'SCIENCE & TECH', 'SPORTS', 'STYLE & BEAUTY', 'TRAVEL',
-      'U.S. NEWS', 'WEDDINGS', 'WEIRD NEWS', 'WELLNESS',
-      'WOMEN', 'WORLD NEWS'
-    ];
-
-    if (maxIndex < labels.length) {
-      return labels[maxIndex];
+    // Возвращаем соответствующую метку из констант
+    if (maxIndex < ClassificationConstants.labels.length) {
+      return ClassificationConstants.labels[maxIndex];
     }
 
     return 'UNKNOWN';
@@ -176,6 +180,14 @@ class SendMessage {
   }
 
   List<double> _softmax(List<double> scores) {
+    // Создаем ключ для кэша
+    final key = scores.map((s) => s.toStringAsFixed(6)).join(':');
+
+    // Проверяем кэш
+    if (_softmaxCache.containsKey(key)) {
+      return _softmaxCache[key]!;
+    }
+
     // Находим максимальное значение для числовой стабильности
     final maxScore = scores.reduce((a, b) => a > b ? a : b);
 
@@ -187,6 +199,11 @@ class SendMessage {
     final sumExpScores = expScores.reduce((a, b) => a + b);
 
     // Вычисляем softmax: e^(x - max) / sum(e^(x - max))
-    return expScores.map((score) => score / sumExpScores).toList();
+    final result = expScores.map((score) => score / sumExpScores).toList();
+
+    // Сохраняем в кэш
+    _softmaxCache[key] = result;
+
+    return result;
   }
 }

@@ -41,7 +41,7 @@ class ErrorHandler {
 
   // Преобразует Failure в удобное для пользователя сообщение
   static String getErrorMessage(Failure failure) {
-    switch (failure.runtimeType) {
+    switch (failure) {
       case NetworkFailure:
         return 'Ошибка сети. Проверьте подключение к интернету.';
       case ServerFailure:

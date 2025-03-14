@@ -4,10 +4,23 @@ class MathUtils {
   /// Применяет функцию softmax к массиву чисел
   static List<double> softmax(List<double> scores) {
     final maxScore = scores.reduce(math.max);
-    final expScores = scores.map((score) => math.exp(score - maxScore))
-        .toList();
-    final sumExpScores = expScores.reduce((a, b) => a + b);
-    return expScores.map((score) => score / sumExpScores).toList();
+
+    // Создаем список один раз и модифицируем его
+    final result = List<double>.filled(scores.length, 0.0);
+    double sumExp = 0.0;
+
+    // Первый проход: вычисляем exp(score - maxScore)
+    for (int i = 0; i < scores.length; i++) {
+      result[i] = math.exp(scores[i] - maxScore);
+      sumExp += result[i];
+    }
+
+    // Второй проход: нормализуем
+    for (int i = 0; i < scores.length; i++) {
+      result[i] /= sumExp;
+    }
+
+    return result;
   }
 
   /// Вычисляет уровень уверенности (максимальное значение после softmax)
@@ -29,13 +42,6 @@ class MathUtils {
     }
 
     return maxIndex;
-  }
-
-  /// Вычисляет среднее значение в массиве
-  static double mean(List<double> values) {
-    if (values.isEmpty) return 0.0;
-    final sum = values.reduce((a, b) => a + b);
-    return sum / values.length;
   }
 
   /// Линейно нормализует значение из одного диапазона в другой

@@ -7,17 +7,18 @@ abstract class ThemeState extends Equatable {
   List<Object> get props => [];
 }
 
+
 class ThemeInitial extends ThemeState {}
 
 class ThemeLoading extends ThemeState {}
 
 class ThemeLoaded extends ThemeState {
-  final ThemeMode themeMode;
+  final CustomThemeMode customThemeMode;
 
-  const ThemeLoaded({required this.themeMode});
+  const ThemeLoaded({required this.customThemeMode});
 
   @override
-  List<Object> get props => [themeMode];
+  List<Object> get props => [customThemeMode];
 }
 
 class ThemeError extends ThemeState {

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:flutter_launcher_icons/custom_exceptions.dart';
 import 'package:path_provider/path_provider.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/logger/app_logger.dart';
 import '../../../core/utils/file_utils.dart';
@@ -25,6 +26,7 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
 
   ChatLocalDataSourceImpl({required this.logger});
 
+  @override
   Future<void> ensureCurrentChatExists() async {
     try {
       final exists = await chatExists('current');
@@ -115,9 +117,19 @@ class ChatLocalDataSourceImpl implements ChatLocalDataSource {
 
       final filePath = await FileUtils.getSafePath(chatName, extension: fileExtension);
 
-      // Проверяем доступ к файловой системе
-      if (!await FileUtils.hasFileAccess(filePath)) {
-        throw FileException('Нет доступа к файлу: $filePath');
+      // Проверка длины имени
+      if (chatName.length > 100) {
+        throw SecurityException('Имя чата слишком длинное');
+      }
+
+      // Проверяем безопасность имени файла
+      if (!FileUtils.isValidFileName(chatName)) {
+        throw SecurityException('Недопустимое имя чата: $chatName');
+      }
+
+      // Проверяем сообщения
+      if (messages.any((msg) => msg.text.length > AppConstants.maxTextLength)) {
+        throw SecurityException('Одно или несколько сообщений превышают максимальную длину');
       }
 
       // Конвертируем сообщения в JSON

@@ -1,5 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter_launcher_icons/custom_exceptions.dart';
+import '../../core/services/translation_service.dart';
+import '../../core/utils/translation_utils.dart';
 import '../datasources/local/chat_local_datasource.dart';
 import '../../domain/repositories/chat_repository.dart';
 import '../../domain/entities/message.dart';
@@ -30,7 +32,7 @@ class ChatRepositoryImpl implements ChatRepository {
     } catch (e) {
       logger.logError('Неизвестная ошибка при получении списка чатов', e);
       return Left(UnknownFailure(
-          message: 'Произошла ошибка при получении списка чатов'
+          message: Tr.get(TranslationKeys.errorNum1)
       ));
     }
   }
@@ -43,7 +45,7 @@ class ChatRepositoryImpl implements ChatRepository {
     } on FileNotFoundException catch (e) {
       logger.logError('Файл чата не найден', e);
       return Left(FileOperationFailure(
-          message: 'Чат не найден: ${e}'
+          message: 'Чат не найден: $e'
       ));
     } on FileException catch (e) {
       logger.logError('Ошибка при загрузке чата', e);
@@ -57,7 +59,7 @@ class ChatRepositoryImpl implements ChatRepository {
       ));
     } catch (e) {
       logger.logError('Неизвестная ошибка при загрузке чата', e);
-      return Left(UnknownFailure(
+      return const Left(UnknownFailure(
           message: 'Произошла ошибка при загрузке чата'
       ));
     }
@@ -84,7 +86,7 @@ class ChatRepositoryImpl implements ChatRepository {
       ));
     } catch (e) {
       logger.logError('Неизвестная ошибка при сохранении чата', e);
-      return Left(UnknownFailure(
+      return const Left(UnknownFailure(
           message: 'Произошла ошибка при сохранении чата'
       ));
     }
@@ -102,7 +104,7 @@ class ChatRepositoryImpl implements ChatRepository {
       ));
     } catch (e) {
       logger.logError('Неизвестная ошибка при удалении чата', e);
-      return Left(UnknownFailure(
+      return const Left(UnknownFailure(
           message: 'Произошла ошибка при удалении чата'
       ));
     }
@@ -115,7 +117,7 @@ class ChatRepositoryImpl implements ChatRepository {
       return Right(chatName);
     } catch (e) {
       logger.logError('Ошибка при генерации имени чата', e);
-      return Left(UnknownFailure(
+      return const Left(UnknownFailure(
           message: 'Не удалось создать имя для нового чата'
       ));
     }
@@ -128,7 +130,7 @@ class ChatRepositoryImpl implements ChatRepository {
       return Right(exists);
     } catch (e) {
       logger.logError('Ошибка при проверке существования чата', e);
-      return Left(FileOperationFailure(
+      return const Left(FileOperationFailure(
           message: 'Не удалось проверить существование чата'
       ));
     }
@@ -151,7 +153,7 @@ class ChatRepositoryImpl implements ChatRepository {
       ));
     } catch (e) {
       logger.logError('Неизвестная ошибка при переименовании чата', e);
-      return Left(UnknownFailure(
+      return const Left(UnknownFailure(
           message: 'Произошла ошибка при переименовании чата'
       ));
     }

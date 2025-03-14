@@ -1,10 +1,7 @@
 //speech_button.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/services/translation_service.dart';
 import '../../core/utils/translation_utils.dart';
-import '../bloc/chat/chat_bloc.dart';
-import '../../core/constants/app_constants.dart';
 
 class SpeechButton extends StatefulWidget {
   final bool isListening;
@@ -13,12 +10,12 @@ class SpeechButton extends StatefulWidget {
   final Function()? onListenStop;
 
   const SpeechButton({
-    Key? key,
+    super.key,
     this.isListening = false,
     this.isDisabled = false,
     this.onListenStart,
     this.onListenStop,
-  }) : super(key: key);
+  });
 
   @override
   State<SpeechButton> createState() => _SpeechButtonState();
@@ -48,6 +45,7 @@ class _SpeechButtonState extends State<SpeechButton> with SingleTickerProviderSt
     }
   }
 
+  @override
   @override
   void didUpdateWidget(SpeechButton oldWidget) {
     super.didUpdateWidget(oldWidget);

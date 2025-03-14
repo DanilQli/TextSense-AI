@@ -1,25 +1,27 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
+import '../../app.dart';
+
 class UserSettings extends Equatable {
-  final ThemeMode themeMode;
+  final CustomThemeMode customThemeMode;
   final String languageCode;
 
   const UserSettings({
-    this.themeMode = ThemeMode.system,
+    this.customThemeMode = CustomThemeMode.system,
     this.languageCode = 'en',
   });
 
   UserSettings copyWith({
-    ThemeMode? themeMode,
+    CustomThemeMode? customThemeMode,
     String? languageCode,
   }) {
     return UserSettings(
-      themeMode: themeMode ?? this.themeMode,
+      customThemeMode: customThemeMode ?? this.customThemeMode,
       languageCode: languageCode ?? this.languageCode,
     );
   }
 
   @override
-  List<Object> get props => [themeMode, languageCode];
+  List<Object> get props => [customThemeMode, languageCode];
 }

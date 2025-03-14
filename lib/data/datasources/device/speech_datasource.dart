@@ -10,12 +10,12 @@ abstract class SpeechDataSource {
   Future<bool> stopListening();
   Future<bool> isAvailable();
   Future<bool> isListening();
-  Future<List<String>> getAvailableLocales();
+  Future<void> dispose();
 }
 
 class SpeechDataSourceImpl implements SpeechDataSource {
   final stt.SpeechToText _speech;
-  final _textController = StreamController<String>.broadcast();
+  late var _textController = StreamController<String>.broadcast();
 
   SpeechDataSourceImpl({stt.SpeechToText? speech})
       : _speech = speech ?? stt.SpeechToText();
@@ -67,38 +67,55 @@ class SpeechDataSourceImpl implements SpeechDataSource {
         await stopListening();
       }
 
+      // Переиспользуем существующий контроллер или создаем новый
+      if (_textController.isClosed) {
+        _textController = StreamController<String>.broadcast();
+      }
+
       // Запускаем распознавание
       await _speech.listen(
         onResult: (result) {
-          if (result.finalResult) {
+          AppLogger.debug('Получен результат распознавания: ${result.recognizedWords} (финальный: ${result.finalResult})');
+
+          // Добавляем результат в поток, даже если он не финальный
+          if (result.recognizedWords.isNotEmpty) {
             _textController.add(result.recognizedWords);
+          }
+
+          // Если результат финальный, останавливаем распознавание
+          if (result.finalResult) {
+            AppLogger.debug('Получен финальный результат: ${result.recognizedWords}');
+            // НЕ закрываем поток здесь, только добавляем результат
           }
         },
         listenFor: const Duration(seconds: 30), // Максимальное время слушания
         pauseFor: const Duration(seconds: 3), // Время паузы перед остановкой
-        partialResults: true, // Для получения промежуточных результатов
+        listenOptions: stt.SpeechListenOptions(
+          partialResults: true,
+        ), // Для получения промежуточных результатов
         localeId: 'ru_RU', // Можно сделать параметром
       );
+
+      // Добавляем обработчик статуса
+      _speech.statusListener = (status) {
+        AppLogger.debug('Статус распознавания речи: $status');
+
+        // Если статус "done" или "notListening", закрываем поток
+        if (status == 'done' || status == 'notListening') {
+          // Важно! НЕ закрываем поток сразу, даем время на обработку результатов
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (!_textController.isClosed) {
+              _textController.close();
+            }
+          });
+        }
+      };
 
       AppLogger.debug('Распознавание речи запущено');
       return _textController.stream;
     } catch (e) {
       AppLogger.error('Ошибка при запуске распознавания речи', e);
       throw Exception('Не удалось запустить распознавание речи: $e');
-    }
-  }
-
-  @override
-  Future<bool> stopListening() async {
-    try {
-      if (_speech.isListening) {
-        _speech.stop();
-        AppLogger.debug('Распознавание речи остановлено');
-      }
-      return true;
-    } catch (e) {
-      AppLogger.error('Ошибка при остановке распознавания речи', e);
-      throw Exception('Не удалось остановить распознавание речи: $e');
     }
   }
 
@@ -112,18 +129,31 @@ class SpeechDataSourceImpl implements SpeechDataSource {
     return _speech.isListening;
   }
 
-  @override
-  Future<List<String>> getAvailableLocales() async {
-    try {
-      if (!await isAvailable()) {
-        await initialize();
-      }
-
-      final locales = await _speech.locales();
-      return locales.map((locale) => locale.localeId).toList();
-    } catch (e) {
-      AppLogger.error('Ошибка при получении доступных локалей', e);
-      throw Exception('Не удалось получить список доступных локалей: $e');
+  // Добавить метод
+  Future<void> dispose() async {
+    await stopListening();
+    if (!_textController.isClosed) {
+      _textController.close();
     }
   }
+
+  @override
+  Future<bool> stopListening() async {
+    try {
+      if (_speech.isListening) {
+        _speech.stop();
+        AppLogger.debug('Распознавание речи остановлено');
+      }
+
+      // Не закрываем контроллер здесь, чтобы можно было получить последние результаты
+      // Это будет делаться в dispose или при необходимости
+
+      return true;
+    } catch (e) {
+      AppLogger.error('Ошибка при остановке распознавания речи', e);
+      throw Exception('Не удалось остановить распознавание речи: $e');
+    }
+  }
+
+
 }

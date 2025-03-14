@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../app.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../../core/logger/app_logger.dart';
 
 abstract class PreferencesDataSource {
-  Future<ThemeMode> getThemeMode();
-  Future<bool> saveThemeMode(ThemeMode themeMode);
+  Future<CustomThemeMode> getThemeMode();
+  Future<bool> saveThemeMode(CustomThemeMode customThemeMode);
   Future<String> getLanguageCode();
   Future<bool> saveLanguageCode(String languageCode);
 }
@@ -19,20 +20,20 @@ class PreferencesDataSourceImpl implements PreferencesDataSource {
   PreferencesDataSourceImpl({required this.prefs});
 
   @override
-  Future<ThemeMode> getThemeMode() async {
+  Future<CustomThemeMode> getThemeMode() async {
     try {
       final themeIndex = prefs.getInt(_themeKey);
 
       if (themeIndex == null) {
-        return ThemeMode.system;
+        return CustomThemeMode.system;
       }
 
       // Безопасное получение значения из enum
-      if (themeIndex >= 0 && themeIndex < ThemeMode.values.length) {
-        return ThemeMode.values[themeIndex];
+      if (themeIndex >= 0 && themeIndex < CustomThemeMode.values.length) {
+        return CustomThemeMode.values[themeIndex];
       }
 
-      return ThemeMode.system;
+      return CustomThemeMode.system;
     } catch (e) {
       AppLogger.error('Ошибка при получении настройки темы', e);
       throw CacheException('Не удалось получить настройку темы: $e');
@@ -40,9 +41,9 @@ class PreferencesDataSourceImpl implements PreferencesDataSource {
   }
 
   @override
-  Future<bool> saveThemeMode(ThemeMode themeMode) async {
+  Future<bool> saveThemeMode(CustomThemeMode customThemeMode) async {
     try {
-      final result = await prefs.setInt(_themeKey, themeMode.index);
+      final result = await prefs.setInt(_themeKey, customThemeMode.index);
       return result;
     } catch (e) {
       AppLogger.error('Ошибка при сохранении настройки темы', e);

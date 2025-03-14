@@ -10,7 +10,6 @@ class TranslationException extends AppException {
 abstract class TranslatorDataSource {
   Future<String> translate(String text, String targetLanguage);
   Future<String> detectLanguage(String text);
-  Future<List<String>> getSupportedLanguages();
 }
 
 class TranslatorDataSourceImpl implements TranslatorDataSource {
@@ -55,18 +54,4 @@ class TranslatorDataSourceImpl implements TranslatorDataSource {
     }
   }
 
-  @override
-  Future<List<String>> getSupportedLanguages() async {
-    try {
-      // В Google Translator нет прямого API для получения поддерживаемых языков,
-      // поэтому мы используем заранее известный список
-      return [
-        'en', 'ru', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'pl', 'zh-cn',
-        'ja', 'ko', 'ar', 'hi', 'tr', 'cs', 'sv', 'da', 'fi', 'el',
-      ];
-    } catch (e) {
-      AppLogger.error('Ошибка при получении списка языков', e);
-      throw TranslationException('Не удалось получить список поддерживаемых языков: $e');
-    }
-  }
 }

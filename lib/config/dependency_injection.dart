@@ -19,6 +19,7 @@ import '../domain/repositories/speech_repository.dart';
 import '../domain/repositories/speech_repository_impl.dart';
 import '../domain/repositories/translator_repository.dart';
 import '../domain/repositories/translator_repository_impl.dart';
+import '../domain/usecases/chat/export_chat.dart';
 import '../domain/usecases/chat/send_message.dart';
 import '../domain/usecases/chat/get_message_history.dart';
 import '../domain/usecases/chat/save_chat.dart';
@@ -63,6 +64,8 @@ Future<void> initDependencies() async {
   getIt.registerLazySingleton<TranslatorDataSource>(
           () => TranslatorDataSourceImpl(translator: getIt())
   );
+  getIt.registerLazySingleton(() => ExportChat(getIt()));
+
 
   // Регистрируем SpeechDataSource, если он еще не зарегистрирован
   if (!getIt.isRegistered<SpeechDataSource>()) {

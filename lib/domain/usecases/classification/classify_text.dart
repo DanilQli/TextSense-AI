@@ -44,7 +44,7 @@ class ClassifyText {
 
       // Если не удалось получить результаты, возвращаем ошибку
       if (categoryResults.isEmpty) {
-        return Left(ClassificationFailure(
+        return const Left(ClassificationFailure(
             message: 'Не удалось классифицировать текст'
         ));
       }

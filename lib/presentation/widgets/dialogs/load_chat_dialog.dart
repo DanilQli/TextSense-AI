@@ -54,11 +54,6 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
   }
 
   Future<void> _showDeleteConfirmation(BuildContext context, String chatName) async {
-    // Получаем текущий язык
-    final languageState = context.read<LanguageBloc>().state;
-    final languageCode = languageState is LanguageLoaded
-        ? languageState.languageCode
-        : 'en';
 
     final chatBloc = context.read<ChatBloc>();
 
@@ -67,22 +62,19 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
       barrierDismissible: false,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text(Tr.get(
-              TranslationKeys.deleteChatConfirmationTitle,
-              languageCode
-          )),
+          title: Text(Tr.get(TranslationKeys.deleteChatConfirmationTitle)),
           content: SingleChildScrollView(
             child: Text(
-                '${Tr.get(TranslationKeys.deleteChatConfirmationMessage, languageCode)} "$chatName"?'
+                '${Tr.get(TranslationKeys.deleteChatConfirmationMessage)} "$chatName"?'
             ),
           ),
           actions: <Widget>[
             TextButton(
-              child: Text(Tr.get(TranslationKeys.cancel, languageCode)),
+              child: Text(Tr.get(TranslationKeys.cancel)),
               onPressed: () => Navigator.of(dialogContext).pop(false),
             ),
             TextButton(
-              child: Text(Tr.get(TranslationKeys.delete, languageCode)),
+              child: Text(Tr.get(TranslationKeys.delete)),
               onPressed: () => Navigator.of(dialogContext).pop(true),
             ),
           ],
@@ -98,11 +90,6 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // Получаем текущий язык
-    String languageCode = 'en';
-    if (context.read<LanguageBloc>().state is LanguageLoaded) {
-      languageCode = (context.read<LanguageBloc>().state as LanguageLoaded).languageCode;
-    }
 
     // Получаем текущую тему
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -110,20 +97,18 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
     return Theme(
       data: isDarkMode
           ? ThemeData.dark().copyWith(
-        dialogBackgroundColor: Colors.grey[850],
         colorScheme: const ColorScheme.dark(
           primary: Colors.blue,
           onPrimary: Colors.white,
           secondary: Colors.blueAccent,
-        ),
+        ), dialogTheme: DialogThemeData(backgroundColor: Colors.grey[850]),
       )
           : ThemeData.light().copyWith(
-        dialogBackgroundColor: Colors.white,
         colorScheme: const ColorScheme.light(
           primary: Colors.blue,
           onPrimary: Colors.white,
           secondary: Colors.blueAccent,
-        ),
+        ), dialogTheme: DialogThemeData(backgroundColor: Colors.white),
       ),
       child: BlocBuilder<ChatBloc, ChatState>(
         buildWhen: (previous, current) =>
@@ -140,11 +125,11 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
           } else if (state is ChatError) {
             // Показываем ошибку загрузки
             return AlertDialog(
-              title: Text(Tr.get(TranslationKeys.uploadChat, languageCode)),
+              title: Text(Tr.get(TranslationKeys.uploadChat)),
               content: Text(state.message),
               actions: [
                 TextButton(
-                  child: Text(Tr.get(TranslationKeys.cancel, languageCode)),
+                  child: Text(Tr.get(TranslationKeys.cancel)),
                   onPressed: () {
                     Navigator.pop(context);
 
@@ -163,18 +148,18 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
           }
 
           return AlertDialog(
-            title: Text(Tr.get(TranslationKeys.uploadChat, languageCode)),
+            title: Text(Tr.get(TranslationKeys.uploadChat)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             content: SizedBox(
               width: double.maxFinite,
               height: 300,
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : _buildChatList(context, savedChats, languageCode),
+                  : _buildChatList(context, savedChats),
             ),
             actions: <Widget>[
               TextButton(
-                child: Text(Tr.get(TranslationKeys.cancel, languageCode)),
+                child: Text(Tr.get(TranslationKeys.cancel)),
                 onPressed: () {
                   Navigator.pop(context);
 
@@ -197,12 +182,11 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
 
   Widget _buildChatList(
       BuildContext context,
-      Map<String, DateTime> savedChats,
-      String languageCode) {
+      Map<String, DateTime> savedChats) {
 
     if (savedChats.isEmpty) {
       return Center(
-        child: Text(Tr.get(TranslationKeys.noSavedChats, languageCode)),
+        child: Text(Tr.get(TranslationKeys.noSavedChats)),
       );
     }
 
@@ -231,7 +215,7 @@ class _LoadChatDialogState extends State<LoadChatDialog> {
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: Text(
-            '${Tr.get(TranslationKeys.lastModified, languageCode)}: $formattedDate',
+            '${Tr.get(TranslationKeys.lastModified)}: $formattedDate',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(

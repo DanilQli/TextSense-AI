@@ -16,11 +16,18 @@ class ChatListScreen extends StatefulWidget {
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
+  bool _isFirstLoad = true;
+
   @override
   void initState() {
     super.initState();
-    // Запрашиваем список сохраненных чатов при открытии экрана
-    context.read<ChatBloc>().add(GetSavedChatsEvent());
+    // Загружаем чаты только если это первая загрузка
+    if (_isFirstLoad) {
+      _isFirstLoad = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<ChatBloc>().add(GetSavedChatsEvent());
+      });
+    }
   }
 
   void _showDeleteConfirmation(BuildContext context, String chatName) {
@@ -47,16 +54,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Получаем текущий язык
-    final languageState = context.watch<LanguageBloc>().state;
-    final languageCode = languageState is LanguageLoaded
-        ? languageState.languageCode
-        : 'en';
-
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(Tr.get('savedChats', languageCode)),
+        title: Text(Tr.get('savedChats')),
       ),
       body: BlocConsumer<ChatBloc, ChatState>(
         listenWhen: (previous, current) =>
@@ -85,7 +86,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
             if (savedChats.isEmpty) {
               return Center(
-                child: Text(Tr.get(TranslationKeys.noSavedChats, languageCode)),
+                child: Text(Tr.get(TranslationKeys.noSavedChats)),
               );
             }
 
@@ -121,7 +122,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   subtitle: Text(
-                    '${Tr.get(TranslationKeys.lastModified, languageCode)}: $formattedDate',
+                    '${Tr.get(TranslationKeys.lastModified)}: $formattedDate',
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
@@ -136,7 +137,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
             );
           }
 
-          return const Center(child: Text('Произошла ошибка загрузки чатов'));
+          return Center(child: Text(Tr.get(TranslationKeys.errorNum19)));
         },
       ),
     );

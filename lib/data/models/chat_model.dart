@@ -1,4 +1,3 @@
-
 // data/models/chat_model.dart
 import 'dart:convert';
 import 'package:uuid/uuid.dart';
@@ -51,7 +50,7 @@ class ChatModel extends Chat {
         !json.containsKey('createdAt') ||
         !json.containsKey('lastModified') ||
         !json.containsKey('messages')) {
-      throw FormatException('Некорректный формат JSON для Chat');
+      throw const FormatException('Некорректный формат JSON для Chat');
     }
 
     final List<Message> messages = (json['messages'] as List)
@@ -99,10 +98,6 @@ class ChatModel extends Chat {
       messages: newMessages,
       lastModified: DateTime.now(),
     );
-  }
-
-  static String toJsonString(ChatModel chat) {
-    return json.encode(chat.toJson());
   }
 
   static ChatModel fromJsonString(String jsonString) {

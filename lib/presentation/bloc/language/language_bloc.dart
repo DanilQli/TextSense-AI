@@ -1,5 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../../../config/app_config.dart';
+import '../../../core/services/translation_service.dart';
+import '../../../core/utils/translation_utils.dart';
 import '../../../domain/usecases/settings/change_language.dart';
 import '../../../domain/usecases/settings/get_settings.dart';
 import '../../../core/logger/app_logger.dart';
@@ -10,6 +13,7 @@ part 'language_state.dart';
 class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
   final ChangeLanguage changeLanguage;
   final GetSettings getSettings;
+  final AppConfig appConfig = AppConfig(); // Используем Singleton
 
   LanguageBloc({
     required this.changeLanguage,
@@ -33,11 +37,14 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
             (settings) => settings.languageCode,
       );
 
+      // Обновляем конфигурацию
+      appConfig.updateLanguage(languageCode);
+
       emit(LanguageLoaded(languageCode: languageCode));
       AppLogger.debug('Язык инициализирован: $languageCode');
     } catch (e) {
       AppLogger.error('Ошибка при инициализации языка', e);
-      emit(LanguageError('Ошибка при загрузке языка'));
+      emit(LanguageError(Tr.get(TranslationKeys.errorNum15)));
       emit(const LanguageLoaded(languageCode: 'en'));
     }
   }
@@ -63,13 +70,16 @@ class LanguageBloc extends Bloc<LanguageEvent, LanguageState> {
             }
           },
               (success) {
+            // Обновляем конфигурацию
+            appConfig.updateLanguage(event.languageCode);
+
             AppLogger.debug('Язык успешно изменен на: ${event.languageCode}');
             emit(LanguageLoaded(languageCode: event.languageCode));
           }
       );
     } catch (e) {
       AppLogger.error('Необработанная ошибка при изменении языка', e);
-      emit(LanguageError('Произошла ошибка при изменении языка'));
+      emit(LanguageError(Tr.get(TranslationKeys.errorNum16)));
       if (state is LanguageLoaded) {
         emit(state); // Возвращаем предыдущее состояние
       } else {

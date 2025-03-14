@@ -1,7 +1,6 @@
 //confidence_indicator.dart
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-import '../../core/constants/classification_constants.dart';
 
 class ConfidenceIndicator extends StatelessWidget {
   final List<List<double>> classificationResult;
@@ -56,24 +55,5 @@ class ConfidenceIndicator extends StatelessWidget {
     } else {
       return Colors.red;
     }
-  }
-
-  /// Возвращает метку предсказания для результата
-  String _getPredictedLabel(List<double> scores) {
-    int maxIndex = 0;
-    double maxValue = scores[0];
-
-    for (int i = 1; i < scores.length; i++) {
-      if (scores[i] > maxValue) {
-        maxValue = scores[i];
-        maxIndex = i;
-      }
-    }
-
-    if (maxIndex < ClassificationConstants.labels.length) {
-      return ClassificationConstants.labels[maxIndex];
-    }
-
-    return 'UNKNOWN';
   }
 }

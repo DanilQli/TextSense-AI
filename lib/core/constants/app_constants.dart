@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppConstants {
   // Основные константы приложения
-  static const String appName = 'Chat App';
+  static const String appName = 'TextSense AI';
   static const String appVersion = '1.0.0';
 
   // Иконки
@@ -97,10 +97,6 @@ class AppConstants {
     '🧹', '🧺', '🧻', '🧼', '🧽', '🧾', '🧿', '🩰',
     '🩱', '🩲', '🩳', '🩴', '🩵', '🩶', '🩷', '🩸', '🩹', '🩺', '🩻', '🩼'
   ];
-
-  // Невалидные символы для имен файлов
-  static const List<String> invalidFileNameChars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|'];
-
   // Приватный конструктор для предотвращения инстанцирования
   AppConstants._();
 }

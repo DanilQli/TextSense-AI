@@ -11,12 +11,6 @@ class NewChatDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Получаем текущий язык
-    final languageState = context.read<LanguageBloc>().state;
-    final languageCode = languageState is LanguageLoaded
-        ? languageState.languageCode
-        : 'en';
-
     final chatBloc = context.read<ChatBloc>();
 
     // Проверяем, есть ли сообщения в текущем чате
@@ -33,24 +27,24 @@ class NewChatDialog extends StatelessWidget {
 
     // Если есть сообщения, спрашиваем о сохранении текущего чата
     return AlertDialog(
-      title: Text(Tr.get(TranslationKeys.newChatConfirmation, languageCode)),
-      content: Text(Tr.get(TranslationKeys.saveCurrentChatQuestion, languageCode)),
+      title: Text(Tr.get(TranslationKeys.newChatConfirmation)),
+      content: Text(Tr.get(TranslationKeys.saveCurrentChatQuestion)),
       actions: [
         TextButton(
-          child: Text(Tr.get(TranslationKeys.dontSave, languageCode)),
+          child: Text(Tr.get(TranslationKeys.dontSave)),
           onPressed: () {
             Navigator.pop(context);
             chatBloc.add(ClearChatEvent());
           },
         ),
         TextButton(
-          child: Text(Tr.get(TranslationKeys.cancel, languageCode)),
+          child: Text(Tr.get(TranslationKeys.cancel)),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         TextButton(
-          child: Text(Tr.get(TranslationKeys.saveAndCreate, languageCode)),
+          child: Text(Tr.get(TranslationKeys.saveAndCreate)),
           onPressed: () {
             Navigator.pop(context);
 

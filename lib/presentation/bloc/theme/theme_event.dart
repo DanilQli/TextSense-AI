@@ -12,10 +12,16 @@ class InitializeTheme extends ThemeEvent {}
 class ToggleThemeEvent extends ThemeEvent {}
 
 class SetSpecificTheme extends ThemeEvent {
-  final ThemeMode themeMode;
+  final CustomThemeMode customThemeMode;
 
-  const SetSpecificTheme(this.themeMode);
+  const SetSpecificTheme(this.customThemeMode);
 
   @override
-  List<Object> get props => [themeMode];
+  List<Object> get props => [customThemeMode];
+}
+
+class ChangeTheme extends ThemeEvent {
+  final String themeName;
+
+  const ChangeTheme(this.themeName);
 }

@@ -76,6 +76,10 @@ dependencies:
   # Иконки и ресурсы
   flutter_launcher_icons: ^0.14.3
 
+  flutter_lints: ^4.0.0
+  mockito: ^5.4.0
+  build_runner: ^2.3.3
+
 
 dev_dependencies:
   flutter_test:
@@ -101,6 +105,7 @@ flutter:
     - assets/model.tflite # Укажите путь к вашей модели
     - assets/vocab.txt
     - assets/localization/translations.json
+    - assets/localization/supported_languages.json
     - assets/model_emotions.tflite
     - assets/vocab_emotions.txt
   # The following line ensures that the Material Icons font is

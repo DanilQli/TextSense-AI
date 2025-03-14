@@ -19,7 +19,7 @@ class ClassifierDataSourceImpl implements ClassifierDataSource {
   Future<List<List<double>>> classifyText(String text) async {
     try {
       if (text.trim().isEmpty) {
-        return [[0.0], [0.0]]; // Возвращаем дефолтное значение для пустого текста
+        return [[0.0], [0.0]];
       }
 
       final url = Uri.parse(AppConstants.classifierEndpoint);
@@ -36,23 +36,34 @@ class ClassifierDataSourceImpl implements ClassifierDataSource {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
+        // Улучшенная валидация ответа
         if (!data.containsKey('output') || !data.containsKey('outputEmotions')) {
-          throw FormatException('Неверный формат ответа API');
+          throw FormatException('Неверный формат ответа API: отсутствуют обязательные поля');
         }
 
-        final output = (data['output'][0] as List<dynamic>)
-            .map((e) => (e as num).toDouble())
-            .toList();
+        if (!(data['output'] is List) || data['output'].isEmpty) {
+          throw FormatException('Неверный формат поля output: ожидался непустой список');
+        }
 
-        final outputEmotions = [(data['outputEmotions'][0] as num).toDouble()];
+        if (!(data['outputEmotions'] is List) || data['outputEmotions'].isEmpty) {
+          throw FormatException('Неверный формат поля outputEmotions: ожидался непустой список');
+        }
 
-        AppLogger.debug('Классификация успешно выполнена');
-        return [output, outputEmotions];
+        try {
+          final output = (data['output'][0] as List<dynamic>)
+              .map((e) => (e as num).toDouble())
+              .toList();
+
+          final outputEmotions = [(data['outputEmotions'][0] as num).toDouble()];
+
+          AppLogger.debug('Классификация успешно выполнена');
+          return [output, outputEmotions];
+        } catch (e) {
+          throw FormatException('Ошибка при преобразовании данных: $e');
+        }
       } else {
         AppLogger.error('Ошибка API классификации: ${response.statusCode}');
-        throw ServerException(
-          'Ошибка API классификации',
-          statusCode: response.statusCode,
+        throw ServerException('Ошибка API классификации',statusCode: response.statusCode,
         );
       }
     } catch (e) {

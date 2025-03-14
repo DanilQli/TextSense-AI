@@ -38,6 +38,6 @@ extension LogLevelExtension on LogLevel {
   }
 
   bool shouldLog(LogLevel minimumLevel) {
-    return this.value >= minimumLevel.value;
+    return value >= minimumLevel.value;
   }
 }

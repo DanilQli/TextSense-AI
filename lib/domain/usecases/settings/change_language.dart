@@ -11,17 +11,8 @@ class ChangeLanguage {
     try {
       // Валидация кода языка
       if (languageCode.trim().isEmpty) {
-        return Left(ValidationFailure(
+        return const Left(ValidationFailure(
             message: 'Код языка не может быть пустым'
-        ));
-      }
-
-      // Проверяем, доступен ли такой язык
-      final supportedLanguages = ['en', 'ru']; // В реальном приложении это может быть динамический список
-
-      if (!supportedLanguages.contains(languageCode)) {
-        return Left(ValidationFailure(
-            message: 'Язык не поддерживается: $languageCode'
         ));
       }
 

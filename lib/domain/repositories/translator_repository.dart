@@ -7,7 +7,4 @@ abstract class TranslatorRepository {
 
   /// Определяет язык текста
   Future<Either<Failure, String>> detectLanguage(String text);
-
-  /// Возвращает список поддерживаемых языков
-  Future<Either<Failure, List<String>>> getSupportedLanguages();
 }

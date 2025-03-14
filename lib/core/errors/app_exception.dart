@@ -8,7 +8,7 @@ abstract class AppException implements Exception {
   @override
   String toString() {
     if (originalError != null) {
-      return '$runtimeType: $message (Original error: $originalError)';
+      return '$runtimeType: $message (Ошибка: $originalError)';
     }
     return '$runtimeType: $message';
   }
@@ -16,8 +16,7 @@ abstract class AppException implements Exception {
 
 /// Ошибка сетевого взаимодействия
 class NetworkException extends AppException {
-  NetworkException(String message, [dynamic originalError])
-      : super(message, originalError);
+  NetworkException(super.message, [super.originalError]);
 }
 
 /// Ошибка сервера
@@ -30,7 +29,7 @@ class ServerException extends AppException {
   @override
   String toString() {
     if (statusCode != null) {
-      return 'ServerException: $message (Status code: $statusCode)';
+      return 'ServerException: $message (Статус кода: $statusCode)';
     }
     return super.toString();
   }

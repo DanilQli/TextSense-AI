@@ -1,16 +1,19 @@
 //chat_input.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../config/dependency_injection.dart';
+import '../../core/logger/app_logger.dart';
 import '../../core/utils/translation_utils.dart';
 import '../../domain/repositories/speech_repository.dart';
 import '../../domain/usecases/speech/listen_to_speech.dart';
 import '../bloc/chat/chat_bloc.dart';
 import '../../core/services/translation_service.dart';
 import '../../core/constants/app_constants.dart';
+import '../bloc/language/language_bloc.dart';
 
 class ChatInput extends StatefulWidget {
-  const ChatInput({Key? key}) : super(key: key);
+  const ChatInput({super.key});
 
   @override
   State<ChatInput> createState() => _ChatInputState();
@@ -19,12 +22,7 @@ class ChatInput extends StatefulWidget {
 class _ChatInputState extends State<ChatInput> {
   final TextEditingController _controller = TextEditingController();
   bool _isListening = false;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  StreamSubscription<String>? _subscription;
 
   void _sendMessage() {
     final text = _controller.text.trim();
@@ -36,79 +34,57 @@ class _ChatInputState extends State<ChatInput> {
 
   @override
   Widget build(BuildContext context) {
-
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: BlocBuilder<ChatBloc, ChatState>(
-              buildWhen: (previous, current) =>
-              current is ChatProcessing ||
-                  (previous is ChatProcessing && current is ChatLoaded),
-              builder: (context, state) {
-                final isProcessing = state is ChatProcessing;
-
-                return TextField(
-                  controller: _controller,
-                  decoration: InputDecoration(
-                    hintText: Tr.get(TranslationKeys.enterText),
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(AppConstants.defaultBorderRadius),
-                      ),
-                    ),
-                  ),
-                  onSubmitted: (_) => _sendMessage(),
-                  maxLines: null,
-                  keyboardType: TextInputType.multiline,
-                  enabled: !isProcessing,
-                );
+          // 🔹 Bloc для управления языком
+          BlocBuilder<LanguageBloc, LanguageState>(
+            builder: (context, state) {
+              return BlocListener<LanguageBloc, LanguageState>(
+              listener: (context, state) {
+                // UI обновляется при смене языка
               },
-            ),
-          ),
-          IconButton(
-            icon: Icon(
-              _isListening ? Icons.mic : Icons.mic_none,
-              color: _isListening
-                  ? Colors.red
-                  : Theme.of(context).primaryColor,
-            ),
-            onPressed: _isListening ? _stopListening : _startListening,
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.send,
-              color: Theme.of(context).primaryColor,
-            ),
-            onPressed: _sendMessage,
+                child: BlocBuilder<LanguageBloc, LanguageState>(
+                  builder: (context, state) {
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            onChanged: (value) => _controller.text = value,
+                            decoration: InputDecoration(
+                              hintText: Tr.get(TranslationKeys.enterText),
+                              border: const OutlineInputBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(10)),
+                              ),
+                            ),
+                            onSubmitted: (_) => _sendMessage(),
+                            maxLines: null,
+                            keyboardType: TextInputType.multiline,
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            _isListening ? Icons.mic : Icons.mic_none,
+                            color: _isListening ? Colors.red : Theme.of(context).primaryColor,
+                          ),
+                          onPressed: _isListening ? _stopListening : _startListening,
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
+                          onPressed: _sendMessage,
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),
-    );
-  }
-
-  void _stopListening() async {
-    if (!_isListening) return;
-
-    final speechRepository = getIt<SpeechRepository>();
-    final result = await speechRepository.stopListening();
-
-    result.fold(
-          (failure) {
-        // Даже при ошибке останавливаем индикатор прослушивания
-        setState(() {
-          _isListening = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Ошибка при остановке распознавания: ${failure.message}'))
-        );
-      },
-          (success) {
-        setState(() {
-          _isListening = false;
-        });
-      },
     );
   }
 
@@ -132,37 +108,88 @@ class _ChatInputState extends State<ChatInput> {
           );
         },
             (stream) {
-          stream.listen(
+          // Подписываемся на события
+          final subscription = stream.listen(
                 (text) {
-              if (text.isNotEmpty) {
+              AppLogger.debug('Получен текст из потока: $text');
+              if (text.isNotEmpty && mounted) {
                 setState(() {
                   _controller.text = text;
                 });
               }
             },
             onError: (e) {
-              setState(() {
-                _isListening = false;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Ошибка распознавания речи: $e'))
-              );
+              AppLogger.error('Ошибка распознавания речи', e);
+              if (mounted) {
+                setState(() {
+                  _isListening = false;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${Tr.get(TranslationKeys.errorNum20)} $e'))
+                );
+              }
             },
             onDone: () {
-              setState(() {
-                _isListening = false;
-              });
+              AppLogger.debug('Поток распознавания речи завершен');
+              if (mounted) {
+                setState(() {
+                  _isListening = false;
+                });
+
+                // Важно! Проверяем, есть ли текст для отправки
+                if (_controller.text.isNotEmpty) {
+                  AppLogger.debug('Отправка распознанного текста: ${_controller.text}');
+                  // Можно автоматически отправить сообщение
+                  // _sendMessage();
+                }
+              }
             },
           );
+
+          // Сохраняем подписку
+          _subscription = subscription;
         },
       );
     } catch (e) {
-      setState(() {
-        _isListening = false;
-      });
+      AppLogger.error('Ошибка при запуске распознавания речи', e);
+      if (mounted) {
+        setState(() {
+          _isListening = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${Tr.get(TranslationKeys.errorNum21)} $e'))
+        );
+      }
+    }
+  }
+
+  void _stopListening() async {
+    if (!_isListening) return;
+
+    setState(() {
+      _isListening = false;
+    });
+
+    try {
+      final speechRepository = getIt<SpeechRepository>();
+      await speechRepository.stopListening();
+
+      // Отменяем подписку
+      _subscription?.cancel();
+      _subscription = null;
+    } catch (e) {
+      AppLogger.error('Ошибка при остановке распознавания речи', e);
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e'))
+          SnackBar(content: Text('${Tr.get(TranslationKeys.errorNum22)} $e'))
       );
     }
   }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _subscription?.cancel();
+    super.dispose();
+  }
+
 }

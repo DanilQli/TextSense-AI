@@ -5,12 +5,55 @@ import '../logger/app_logger.dart';
 import '../errors/app_exception.dart';
 
 class TranslationKeys {
+  static const String couldNotClassifyText = "couldNotClassifyText";
+  static const String back = "back";
+  static const String day1 = "day1";
+  static const String day2 = "day2";
+  static const String day3 = "day3";
+  static const String hour1 = "hour1";
+  static const String hour2 = "hour2";
+  static const String hour3 = "hour3";
+  static const String minute1 = "minute1";
+  static const String minute2 = "minute2";
+  static const String minute3 = "minute3";
+  static const String routeNotFound = "routeNotFound";
+  static const String errorNum1 = "errorNum1";
+  static const String errorNum2 = "errorNum2";
+  static const String errorNum3 = "errorNum3";
+  static const String errorNum4 = "errorNum4";
+  static const String errorNum5 = "errorNum5";
+  static const String errorNum6 = "errorNum6";
+  static const String errorNum7 = "errorNum7";
+  static const String errorNum8 = "errorNum8";
+  static const String errorNum9 = "errorNum9";
+  static const String errorNum10 = "errorNum10";
+  static const String errorNum11 = "errorNum11";
+  static const String errorNum12 = "errorNum12";
+  static const String errorNum13 = "errorNum13";
+  static const String errorNum14 = "errorNum14";
+  static const String errorNum15 = "errorNum15";
+  static const String errorNum16 = "errorNum16";
+  static const String errorNum17 = "errorNum17";
+  static const String errorNum18 = "errorNum18";
+  static const String errorNum19 = "errorNum19";
+  static const String errorNum20 = "errorNum20";
+  static const String errorNum21 = "errorNum21";
+  static const String errorNum22 = "errorNum22";
+  static const String errorNum23 = "errorNum23";
+  static const String applicationDescription = "applicationDescription";
+  static const String rightsReserved = "rightsReserved";
   static const String settings = 'settings';
   static const String appearance = 'appearance';
   static const String theme = 'theme';
   static const String systemTheme = 'systemTheme';
   static const String lightTheme = 'lightTheme';
   static const String darkTheme = 'darkTheme';
+  static const String blueTheme = 'blueTheme';
+  static const String greenTheme = 'greenTheme';
+  static const String orangeTheme = 'orangeTheme';
+  static const String royalPurpleTheme = "royalPurpleTheme";
+  static const String amethystDarkTheme = "amethystDarkTheme";
+  static const String coffeeTheme = "coffeeTheme";
   static const String language = 'language';
   static const String about = 'about';
   static const String version = 'version';
@@ -76,14 +119,61 @@ abstract class TranslationService {
   Future<void> loadTranslations();
   Map<String, dynamic> getTranslations(String languageCode);
   String translate(String key, String languageCode);
+  List<String> get supportedLanguageCodes;
+  String getLanguageName(String code);
 }
 
 class TranslationServiceImpl implements TranslationService {
   Map<String, Map<String, dynamic>> _translations = {};
+  static late List<Map<String, dynamic>> _supportedLanguages;
 
-  static const List<String> _supportedLanguages = ['en', 'ru'];
   static const String _defaultLanguage = 'en';
   static const String _translationsPath = 'assets/localization/translations.json';
+  final Map<String, String> _translationCache = {};  // Кэш для переводов
+
+  static Future<void> loadSupportedLanguages() async {
+    try {
+      String jsonString = await rootBundle.loadString('assets/localization/supported_languages.json');
+      Map<String, dynamic> jsonData = json.decode(jsonString);
+      _supportedLanguages = (jsonData['supportedLanguages'] as List)
+          .map((lang) => {"code": lang['code'], "name": lang['name']})
+          .toList();
+    } catch (e) {
+      throw Exception("Ошибка загрузки списка языков: $e");
+    }
+  }
+
+  @override
+  List<String> get supportedLanguageCodes => _supportedLanguages.map((lang) => lang['code'] as String).toList();
+
+  @override
+  String getLanguageName(String code) => _supportedLanguages.firstWhere((lang) => lang['code'] == code, orElse: () => {"name": "Unknown"})["name"] as String;
+
+
+  @override
+  String translate(String key, String languageCode) {
+  // Создаем составной ключ для кэша
+  final cacheKey = '$languageCode:$key';
+
+  // Проверяем кэш
+  if (_translationCache.containsKey(cacheKey)) {
+  return _translationCache[cacheKey]!;
+  }
+
+  // Получаем перевод
+  final translations = getTranslations(languageCode);
+  final translation = translations[key] ?? key;
+
+  // Кэшируем результат
+  _translationCache[cacheKey] = translation;
+
+  return translation;
+  }
+
+  // Метод для очистки кэша при смене языка
+  void clearCache() {
+  _translationCache.clear();
+  }
 
   @override
   Future<void> loadTranslations() async {
@@ -95,8 +185,9 @@ class TranslationServiceImpl implements TranslationService {
       _translations = {};
 
       for (final language in _supportedLanguages) {
-        if (jsonMap.containsKey(language)) {
-          _translations[language] = Map<String, dynamic>.from(jsonMap[language]);
+        final langCode = language['code'] as String; // Извлекаем код языка
+        if (jsonMap.containsKey(langCode)) {
+          _translations[langCode] = Map<String, dynamic>.from(jsonMap[langCode]);
         }
       }
 
@@ -120,12 +211,6 @@ class TranslationServiceImpl implements TranslationService {
 
     AppLogger.warning('Перевод для языка $languageCode не найден. Используем язык по умолчанию: $_defaultLanguage');
     return _translations[_defaultLanguage] ?? {};
-  }
-
-  @override
-  String translate(String key, String languageCode) {
-    final translations = getTranslations(languageCode);
-    return translations[key] ?? key;
   }
 }
 TranslationService getTranslationService() {

@@ -85,16 +85,4 @@ class SpeechRepositoryImpl implements SpeechRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, List<String>>> getAvailableLocales() async {
-    try {
-      final result = await dataSource.getAvailableLocales();
-      return Right(result);
-    } catch (e) {
-      AppLogger.error('Ошибка при получении доступных локалей', e);
-      return Left(UnknownFailure(
-        message: 'Не удалось получить список доступных локалей: $e',
-      ));
-    }
-  }
 }
