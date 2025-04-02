@@ -3,8 +3,7 @@ import '../../../core/errors/app_exception.dart';
 import '../../../core/logger/app_logger.dart';
 
 class TranslationException extends AppException {
-  TranslationException(String message, [dynamic originalError])
-      : super(message, originalError);
+  TranslationException(super.message, [super.originalError]);
 }
 
 abstract class TranslatorDataSource {
