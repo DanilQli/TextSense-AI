@@ -128,7 +128,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       print('Отправка сообщения: "${event.messageContent}" в чат: $_currentChatName');
 
       // Отправка сообщения через use case
-      final result = await sendMessage(event.messageContent, _currentChatName!, isMultiline: event.isMultiline);
+      final result = await sendMessage(event.messageContent, _currentChatName!);
 
       // Обработка результата отправки сообщения
       result.fold(

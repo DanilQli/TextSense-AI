@@ -14,7 +14,6 @@ import '../bloc/language/language_bloc.dart';
 
 class ChatInput extends StatefulWidget {
   const ChatInput({super.key});
-
   @override
   State<ChatInput> createState() => _ChatInputState();
 }
@@ -22,12 +21,13 @@ class ChatInput extends StatefulWidget {
 class _ChatInputState extends State<ChatInput> {
   final TextEditingController _controller = TextEditingController();
   bool _isListening = false;
+  bool _isMultiline = false; // Переменная для отслеживания режима
   StreamSubscription<String>? _subscription;
 
   void _sendMessage() {
     final text = _controller.text.trim();
     if (text.isNotEmpty) {
-      context.read<ChatBloc>().add(SendMessageEvent(text));
+      context.read<ChatBloc>().add(SendMessageEvent(text, isMultiline: _isMultiline)); // Передаем режим
       _controller.clear();
     }
   }
@@ -38,50 +38,49 @@ class _ChatInputState extends State<ChatInput> {
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          // 🔹 Bloc для управления языком
-          BlocBuilder<LanguageBloc, LanguageState>(
-            builder: (context, state) {
-              return BlocListener<LanguageBloc, LanguageState>(
-              listener: (context, state) {
-                // UI обновляется при смене языка
-              },
-                child: BlocBuilder<LanguageBloc, LanguageState>(
-                  builder: (context, state) {
-
-                    return Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _controller,
-                            onChanged: (value) => _controller.text = value,
-                            decoration: InputDecoration(
-                              hintText: Tr.get(TranslationKeys.enterText),
-                              border: const OutlineInputBorder(
-                                borderRadius: BorderRadius.all(Radius.circular(10)),
-                              ),
-                            ),
-                            onSubmitted: (_) => _sendMessage(),
-                            maxLines: null,
-                            keyboardType: TextInputType.multiline,
-                          ),
+          // Слайдер для переключения между однострочной и многострочной классификацией
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Многострочная классификация"), // Текст для однострочного режима
+              Switch(
+                value: _isMultiline,
+                onChanged: (value) {
+                  setState(() {
+                    _isMultiline = value; // Переключаем режим
+                  });
+                },
+              ),// Текст для многострочного режима
+            ],
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  constraints: const BoxConstraints(
+                    maxHeight: 200, // Ограничиваем максимальную высоту
+                  ),
+                  child: SingleChildScrollView(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        hintText: Tr.get(TranslationKeys.enterText),
+                        border: const OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(10)),
                         ),
-                        IconButton(
-                          icon: Icon(
-                            _isListening ? Icons.mic : Icons.mic_none,
-                            color: _isListening ? Colors.red : Theme.of(context).primaryColor,
-                          ),
-                          onPressed: _isListening ? _stopListening : _startListening,
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
-                          onPressed: _sendMessage,
-                        ),
-                      ],
-                    );
-                  },
+                      ),
+                      onSubmitted: (_) => _sendMessage(),
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
+                    ),
+                  ),
                 ),
-              );
-            },
+              ),
+              IconButton(
+                icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
+                onPressed: _sendMessage,
+              ),
+            ],
           ),
         ],
       ),

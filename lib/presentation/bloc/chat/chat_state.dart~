@@ -14,16 +14,14 @@ class ChatLoading extends ChatState {}
 class ChatProcessing extends ChatState {
   final List<Message> messages;
   final String? currentChatName;
-  final double progress; // Поле для отслеживания прогресса
 
   const ChatProcessing({
     required this.messages,
     this.currentChatName,
-    this.progress = 0.0, // Установите значение по умолчанию
   });
 
   @override
-  List<Object?> get props => [messages, currentChatName, progress];
+  List<Object?> get props => [messages, currentChatName];
 }
 
 class ChatLoaded extends ChatState {

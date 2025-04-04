@@ -10,12 +10,12 @@ abstract class ChatEvent extends Equatable {
 class InitializeChatEvent extends ChatEvent {}
 
 class SendMessageEvent extends ChatEvent {
-  final String text;
+  final String messageContent;
+  final bool isMultiline; // Добавляем параметр isMultiline
 
-  const SendMessageEvent(this.text);
-
+  const SendMessageEvent(this.messageContent, {this.isMultiline = false});
   @override
-  List<Object> get props => [text];
+  List<Object?> get props => [messageContent, isMultiline];
 }
 
 class ClearChatEvent extends ChatEvent {}
@@ -28,7 +28,7 @@ class LoadChatEvent extends ChatEvent {
   const LoadChatEvent(this.chatName);
 
   @override
-  List<Object> get props => [chatName];
+  List<Object?> get props => [chatName];
 }
 
 class GetSavedChatsEvent extends ChatEvent {}
@@ -39,7 +39,7 @@ class SaveChatEvent extends ChatEvent {
   const SaveChatEvent(this.chatName);
 
   @override
-  List<Object> get props => [chatName];
+  List<Object?> get props => [chatName];
 }
 
 class DeleteChatEvent extends ChatEvent {
@@ -48,7 +48,7 @@ class DeleteChatEvent extends ChatEvent {
   const DeleteChatEvent(this.chatName);
 
   @override
-  List<Object> get props => [chatName];
+  List<Object?> get props => [chatName];
 }
 
 class RenameChatEvent extends ChatEvent {
@@ -57,7 +57,7 @@ class RenameChatEvent extends ChatEvent {
   const RenameChatEvent(this.newChatName);
 
   @override
-  List<Object> get props => [newChatName];
+  List<Object?> get props => [newChatName];
 }
 
 class AddReactionEvent extends ChatEvent {
@@ -67,7 +67,7 @@ class AddReactionEvent extends ChatEvent {
   const AddReactionEvent(this.message, this.reaction);
 
   @override
-  List<Object> get props => [message, reaction];
+  List<Object?> get props => [message, reaction];
 }
 
 class RemoveReactionEvent extends ChatEvent {
@@ -76,7 +76,7 @@ class RemoveReactionEvent extends ChatEvent {
   const RemoveReactionEvent(this.message);
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message];
 }
 
 class TranslateMessageEvent extends ChatEvent {
@@ -95,7 +95,7 @@ class CopyMessageEvent extends ChatEvent {
   const CopyMessageEvent(this.message);
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message];
 }
 
 class DeleteMessageEvent extends ChatEvent {
@@ -104,7 +104,7 @@ class DeleteMessageEvent extends ChatEvent {
   const DeleteMessageEvent(this.message);
 
   @override
-  List<Object> get props => [message];
+  List<Object?> get props => [message];
 }
 
 class RestoreStateEvent extends ChatEvent {

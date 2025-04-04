@@ -23,7 +23,7 @@ class AppConstants {
   static const double largeBorderRadius = 16.0;
 
   // Лимиты
-  static const int maxTextLength = 100000;
+  static const int maxTextLength = 1000;
   static const int maxDisplayedChats = 100;
 
   // Форматы дат

@@ -1,4 +1,3 @@
-//message_bubble.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/message.dart';
@@ -13,11 +12,11 @@ class MessageBubble extends StatelessWidget {
   final TextStyle? textStyle;
 
   const MessageBubble({
-    super.key,
+    Key? key,
     required this.message,
     required this.onTap,
     this.textStyle,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +25,7 @@ class MessageBubble extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Align(
-        alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
+        alignment: message.isUser  ? Alignment.centerRight : Alignment.centerLeft,
         child: Container(
           margin: const EdgeInsets.symmetric(vertical: 4),
           padding: const EdgeInsets.all(10),
@@ -37,7 +36,7 @@ class MessageBubble extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (!message.isUser)
+              if (!message.isUser )
                 Center(
                   child: Icon(
                     AppConstants.botIcon,
@@ -82,13 +81,14 @@ class MessageBubble extends StatelessWidget {
                     style: const TextStyle(fontSize: 20),
                   ),
                 ),
-              if (!message.isUser && message.classificationResult != null)
+              if (!message.isUser  && message.classificationResult != null && message.classificationEmotionsResult != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: ConfidenceIndicator(
                     classificationResult: message.classificationResult!,
+                    emotionResult: message.classificationEmotionsResult!,
                   ),
-                )
+                ),
             ],
           ),
         ),

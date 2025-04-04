@@ -114,7 +114,6 @@ Future<void> initDependencies() async {
   getIt.registerFactory(() => ThemeBloc(toggleTheme: getIt(), getSettings: getIt()));
   getIt.registerFactory(() => LanguageBloc(changeLanguage: getIt(), getSettings: getIt()));
   getIt.registerFactory(() => ChatBloc(
-      chatRepository: getIt<ChatRepository>(),
       sendMessage: getIt(),
       getMessageHistory: getIt(),
       saveChat: getIt(),

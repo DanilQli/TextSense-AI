@@ -64,13 +64,11 @@ class _ChatScreenState extends State<ChatScreen> {
           if (state is ChatLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-
           final messages = state is ChatLoaded
               ? state.messages
               : state is ChatProcessing
               ? state.messages
               : [];
-
           final isProcessing = state is ChatProcessing;
 
           return Column(
@@ -90,17 +88,11 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
               ),
               if (isProcessing)
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    children: [
-                      LinearProgressIndicator(value: state.progress), // Индикатор прогресса
-                      SizedBox(height: 8),
-                      Text('${(state.progress * 100).toStringAsFixed(0)}% обработано'), // Текст с процентом
-                    ],
-                  ),
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: LinearProgressIndicator(),
                 ),
-              const ChatInput(), // Ваш виджет ввода сообщений
+              const ChatInput(),
             ],
           );
         },
