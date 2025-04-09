@@ -4,7 +4,6 @@ import '../../../core/constants/classification_constants.dart';
 import '../../../core/errors/failure.dart';
 import '../../../core/services/translation_service.dart';
 import '../../../core/utils/translation_utils.dart';
-import '../../../presentation/bloc/chat/chat_bloc.dart';
 import '../../entities/message.dart';
 import '../../repositories/chat_repository.dart';
 import '../../repositories/classifier_repository.dart';
@@ -21,7 +20,12 @@ class SendMessage {
 
   SendMessage(this.chatRepository, this.classifierRepository, this.translatorRepository);
 
-  Future<Either<Failure, List<Message>>> call(String text, String currentChatName, {bool isMultiline = false}) async {
+  Future<Either<Failure, List<Message>>> call(
+      String text,
+      String currentChatName, {
+        bool isMultiline = false,
+        void Function(double)? onProgress, // Добавляем параметр для прогресса
+      }) async {
     try {
       // Получаем текущие сообщения
       final messagesResult = await chatRepository.loadChat(currentChatName);
@@ -92,6 +96,7 @@ class SendMessage {
 
     // Обновляем прогресс
     final progress = (i + 1) / totalLines; // Прогресс от 0 до 1
+    onProgress?.call(progress); // Вызываем обратный вызов
     }
     } else {
     // Если однострочный режим, классифицируем весь текст как одну строку
@@ -113,9 +118,11 @@ class SendMessage {
     }
     );
 
+    // Обновляем прогресс
+    onProgress?.call(1.0); // Полный прогресс для однострочного режима
     }
 
-    // Создаем сообщение с результатами
+  // Создаем сообщение с результатами
     final messageWithResults = userMessage.copyWith(
     classificationResult: categoryResults,
     classificationEmotionsResult: emotionResults,

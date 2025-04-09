@@ -104,11 +104,11 @@ class AppThemes {
     primarySwatch: Colors.indigo,
     brightness: Brightness.dark,
     scaffoldBackgroundColor: const Color(0xFF121212), // Стандартный Material Design темный фон
-    appBarTheme: AppBarTheme(
-      backgroundColor: const Color(0xFF1F1F1F), // Чуть светлее фона для выделения
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xFF1F1F1F), // Чуть светлее фона для выделения
       elevation: 0,
-      iconTheme: const IconThemeData(color: Colors.white),
-      titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w500),
+      iconTheme: IconThemeData(color: Colors.white),
+      titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w500),
     ),
     textTheme: const TextTheme(
       bodyMedium: TextStyle(color: Colors.white70), // Немного мягче белого
@@ -197,11 +197,11 @@ class AppThemes {
     primarySwatch: Colors.deepPurple,
     brightness: Brightness.dark,
     scaffoldBackgroundColor: const Color(0xFF211A37), // Глубокий фиолетово-синий фон
-    appBarTheme: AppBarTheme(
-      backgroundColor: const Color(0xFF392B69), // Более светлый фиолетовый для аппбара
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xFF392B69), // Более светлый фиолетовый для аппбара
       elevation: 0,
-      iconTheme: const IconThemeData(color: Color(0xFFD1C4E9)), // Светло-лавандовые иконки
-      titleTextStyle: const TextStyle(color: Color(0xFFD1C4E9), fontSize: 20, fontWeight: FontWeight.w500),
+      iconTheme: IconThemeData(color: Color(0xFFD1C4E9)), // Светло-лавандовые иконки
+      titleTextStyle: TextStyle(color: Color(0xFFD1C4E9), fontSize: 20, fontWeight: FontWeight.w500),
     ),
     textTheme: const TextTheme(
       bodyMedium: TextStyle(color: Color(0xFFD1C4E9)),
@@ -279,7 +279,7 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
       // Закрываем другие ресурсы по необходимости
     } catch (e) {
       if (kDebugMode) {
-        print('Ошибка при очистке ресурсов: $e');
+        AppLogger.error('Ошибка при очистке ресурсов: $e');
       }
     }
   }
@@ -621,16 +621,13 @@ class ClassificationConstants {
 }
 // core-errors-app_exception.dart
 /// Базовый класс для всех исключений приложения
-abstract class AppException implements Exception {
+class AppException implements Exception {
   final String message;
   final dynamic originalError;
   AppException(this.message, [this.originalError]);
   @override
   String toString() {
-    if (originalError != null) {
-      return '$runtimeType: $message (Ошибка: $originalError)';
-    }
-    return '$runtimeType: $message';
+    return '$runtimeType: $message${originalError != null ? ' (Ошибка: $originalError)' : ''}';
   }
 }
 /// Ошибка сетевого взаимодействия
@@ -652,38 +649,31 @@ class ServerException extends AppException {
 }
 /// Ошибка кэша
 class CacheException extends AppException {
-  CacheException(String message, [dynamic originalError])
-      : super(message, originalError);
+  CacheException(super.message, [super.originalError]);
 }
 /// Ошибка форматирования данных
 class FormatException extends AppException {
-  FormatException(String message, [dynamic originalError])
-      : super(message, originalError);
+  FormatException(super.message, [super.originalError]);
 }
 /// Ошибка операций с файлами
 class FileException extends AppException {
-  FileException(String message, [dynamic originalError])
-      : super(message, originalError);
+  FileException(super.message, [super.originalError]);
 }
 /// Ошибка безопасности
 class SecurityException extends AppException {
-  SecurityException(String message, [dynamic originalError])
-      : super(message, originalError);
+  SecurityException(super.message, [super.originalError]);
 }
 /// Ошибка бизнес-логики
 class BusinessException extends AppException {
-  BusinessException(String message, [dynamic originalError])
-      : super(message, originalError);
+  BusinessException(super.message, [super.originalError]);
 }
 /// Ошибка доступа к функциональности
 class PermissionException extends AppException {
-  PermissionException(String message, [dynamic originalError])
-      : super(message, originalError);
+  PermissionException(super.message, [super.originalError]);
 }
 /// Необработанная ошибка
 class UnknownException extends AppException {
-  UnknownException(String message, [dynamic originalError])
-      : super(message, originalError);
+  UnknownException(super.message, [super.originalError]);
   factory UnknownException.fromError(dynamic error) {
     if (error is Exception || error is Error) {
       return UnknownException(
@@ -2952,7 +2942,6 @@ import '../../../core/constants/classification_constants.dart';
 import '../../../core/errors/failure.dart';
 import '../../../core/services/translation_service.dart';
 import '../../../core/utils/translation_utils.dart';
-import '../../../presentation/bloc/chat/chat_bloc.dart';
 import '../../entities/message.dart';
 import '../../repositories/chat_repository.dart';
 import '../../repositories/classifier_repository.dart';
@@ -2966,7 +2955,12 @@ class SendMessage {
   // Кэш для результатов softmax
   final Map<String, List<double>> _softmaxCache = {};
   SendMessage(this.chatRepository, this.classifierRepository, this.translatorRepository);
-  Future<Either<Failure, List<Message>>> call(String text, String currentChatName, {bool isMultiline = false}) async {
+  Future<Either<Failure, List<Message>>> call(
+      String text,
+      String currentChatName, {
+        bool isMultiline = false,
+        void Function(double)? onProgress, // Добавляем параметр для прогресса
+      }) async {
     try {
       // Получаем текущие сообщения
       final messagesResult = await chatRepository.loadChat(currentChatName);
@@ -3027,6 +3021,7 @@ class SendMessage {
     );
     // Обновляем прогресс
     final progress = (i + 1) / totalLines; // Прогресс от 0 до 1
+    onProgress?.call(progress); // Вызываем обратный вызов
     }
     } else {
     // Если однострочный режим, классифицируем весь текст как одну строку
@@ -3046,8 +3041,10 @@ class SendMessage {
     emotionResults.add(emotionScores);
     }
     );
+    // Обновляем прогресс
+    onProgress?.call(1.0); // Полный прогресс для однострочного режима
     }
-    // Создаем сообщение с результатами
+  // Создаем сообщение с результатами
     final messageWithResults = userMessage.copyWith(
     classificationResult: categoryResults,
     classificationEmotionsResult: emotionResults,
@@ -3443,28 +3440,37 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       }
       // Если имя чата не указано, создаем новый чат
       if (_currentChatName == null) {
-        // Получаем уникальное имя для нового чата
         final newChatNameResult = await chatRepository.getUniqueDefaultChatName();
         newChatNameResult.fold(
                 (failure) {
               emit(ChatError(message: 'Не удалось создать новый чат: ${failure.message}'));
-              return; // Выходим из метода, если не удалось получить имя
+              return;
             },
                 (newChatName) {
-              _currentChatName = newChatName; // Устанавливаем имя нового чата
+              _currentChatName = newChatName;
               AppLogger.debug('Создан новый чат с именем: $_currentChatName');
             }
         );
       }
-      // Теперь можно отправить сообщение
       emit(ChatProcessing(
         messages: _messages,
         currentChatName: _currentChatName,
+        progress: 0.0, // Начальный прогресс
       ));
-      // Логируем информацию о сообщении, которое отправляется
-      print('Отправка сообщения: "${event.messageContent}" в чат: $_currentChatName');
-      // Отправка сообщения через use case
-      final result = await sendMessage(event.messageContent, _currentChatName!, isMultiline: event.isMultiline);
+      // Используем ваш класс SendMessage для отправки сообщения
+      final result = await sendMessage(
+        event.messageContent,
+        _currentChatName!,
+        isMultiline: event.isMultiline,
+        onProgress: (progress) {
+          print('Прогресс: $progress'); // Логи прогресса
+          emit(ChatProcessing(
+            messages: _messages,
+            currentChatName: _currentChatName,
+            progress: progress, // Обновляем прогресс в состоянии
+          ));
+        },
+      );
       // Обработка результата отправки сообщения
       result.fold(
             (failure) {
@@ -4435,10 +4441,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
 // presentation-screens-chat_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/services/translation_service.dart';
-import '../../core/utils/translation_utils.dart';
 import '../bloc/chat/chat_bloc.dart';
-import '../bloc/language/language_bloc.dart';
 import '../widgets/chat_input.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/chat_app_bar.dart';
@@ -4454,7 +4457,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    // Прокрутка вниз при входе в приложение
+    // Прокрутка вниз при инициализации экрана
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }
   @override
@@ -4477,11 +4480,19 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: const ChatAppBar(),
       body: BlocConsumer<ChatBloc, ChatState>(
         listenWhen: (previous, current) =>
-        current is ChatLoaded && previous is ChatProcessing,
+        (current is ChatLoaded && previous is ChatLoading) ||
+            (current is ChatLoaded && previous is ChatLoaded) ||
+              (current is ChatLoaded && previous is ChatProcessing), // Условие для автоскролла
         listener: (context, state) {
           if (state is ChatLoaded) {
             // Прокрутка вниз при загрузке новых сообщений
-            WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (state.messages.isNotEmpty) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _scrollToBottom();
+                });
+              }
+            });
           }
         },
         buildWhen: (previous, current) =>
@@ -4520,7 +4531,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Column(
                     children: [
                       LinearProgressIndicator(value: state.progress), // Индикатор прогресса
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text('${(state.progress * 100).toStringAsFixed(0)}% обработано'), // Текст с процентом
                     ],
                   ),

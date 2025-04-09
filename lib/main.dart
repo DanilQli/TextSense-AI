@@ -64,7 +64,7 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
       // Закрываем другие ресурсы по необходимости
     } catch (e) {
       if (kDebugMode) {
-        print('Ошибка при очистке ресурсов: $e');
+        AppLogger.error('Ошибка при очистке ресурсов: $e');
       }
     }
   }

@@ -111,11 +111,11 @@ class AppThemes {
     primarySwatch: Colors.indigo,
     brightness: Brightness.dark,
     scaffoldBackgroundColor: const Color(0xFF121212), // Стандартный Material Design темный фон
-    appBarTheme: AppBarTheme(
-      backgroundColor: const Color(0xFF1F1F1F), // Чуть светлее фона для выделения
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xFF1F1F1F), // Чуть светлее фона для выделения
       elevation: 0,
-      iconTheme: const IconThemeData(color: Colors.white),
-      titleTextStyle: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w500),
+      iconTheme: IconThemeData(color: Colors.white),
+      titleTextStyle: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w500),
     ),
     textTheme: const TextTheme(
       bodyMedium: TextStyle(color: Colors.white70), // Немного мягче белого
@@ -209,11 +209,11 @@ class AppThemes {
     primarySwatch: Colors.deepPurple,
     brightness: Brightness.dark,
     scaffoldBackgroundColor: const Color(0xFF211A37), // Глубокий фиолетово-синий фон
-    appBarTheme: AppBarTheme(
-      backgroundColor: const Color(0xFF392B69), // Более светлый фиолетовый для аппбара
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Color(0xFF392B69), // Более светлый фиолетовый для аппбара
       elevation: 0,
-      iconTheme: const IconThemeData(color: Color(0xFFD1C4E9)), // Светло-лавандовые иконки
-      titleTextStyle: const TextStyle(color: Color(0xFFD1C4E9), fontSize: 20, fontWeight: FontWeight.w500),
+      iconTheme: IconThemeData(color: Color(0xFFD1C4E9)), // Светло-лавандовые иконки
+      titleTextStyle: TextStyle(color: Color(0xFFD1C4E9), fontSize: 20, fontWeight: FontWeight.w500),
     ),
     textTheme: const TextTheme(
       bodyMedium: TextStyle(color: Color(0xFFD1C4E9)),

@@ -4,7 +4,6 @@ import '../../../core/constants/classification_constants.dart';
 import '../../../core/errors/failure.dart';
 import '../../../core/services/translation_service.dart';
 import '../../../core/utils/translation_utils.dart';
-import '../../../presentation/bloc/chat/chat_bloc.dart';
 import '../../entities/message.dart';
 import '../../repositories/chat_repository.dart';
 import '../../repositories/classifier_repository.dart';
@@ -92,8 +91,6 @@ class SendMessage {
 
     // Обновляем прогресс
     final progress = (i + 1) / totalLines; // Прогресс от 0 до 1
-    // Здесь вы можете вызвать emit для обновления состояния прогресса
-    // Например: emit(ChatProcessing(messages: currentMessages, currentChatName: currentChatName, progress: progress));
     }
     } else {
     // Если однострочный режим, классифицируем весь текст как одну строку
@@ -115,8 +112,6 @@ class SendMessage {
     }
     );
 
-    // Обновляем прогресс на 100%
-    // emit(ChatProcessing(messages: currentMessages, currentChatName: currentChatName, progress: 1.0));
     }
 
     // Создаем сообщение с результатами

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/services/translation_service.dart';
-import '../../core/utils/translation_utils.dart';
 import '../bloc/chat/chat_bloc.dart';
-import '../bloc/language/language_bloc.dart';
 import '../widgets/chat_input.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/chat_app_bar.dart';
@@ -23,7 +20,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    // Прокрутка вниз при входе в приложение
+    // Прокрутка вниз при инициализации экрана
     WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
   }
 
@@ -49,11 +46,19 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: const ChatAppBar(),
       body: BlocConsumer<ChatBloc, ChatState>(
         listenWhen: (previous, current) =>
-        current is ChatLoaded && previous is ChatProcessing,
+        (current is ChatLoaded && previous is ChatLoading) ||
+            (current is ChatLoaded && previous is ChatLoaded) ||
+              (current is ChatLoaded && previous is ChatProcessing), // Условие для автоскролла
         listener: (context, state) {
           if (state is ChatLoaded) {
             // Прокрутка вниз при загрузке новых сообщений
-            WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (state.messages.isNotEmpty) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _scrollToBottom();
+                });
+              }
+            });
           }
         },
         buildWhen: (previous, current) =>
@@ -95,7 +100,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   child: Column(
                     children: [
                       LinearProgressIndicator(value: state.progress), // Индикатор прогресса
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text('${(state.progress * 100).toStringAsFixed(0)}% обработано'), // Текст с процентом
                     ],
                   ),

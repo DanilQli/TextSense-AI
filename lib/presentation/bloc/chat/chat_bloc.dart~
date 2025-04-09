@@ -105,30 +105,38 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
 
       // Если имя чата не указано, создаем новый чат
       if (_currentChatName == null) {
-        // Получаем уникальное имя для нового чата
         final newChatNameResult = await chatRepository.getUniqueDefaultChatName();
         newChatNameResult.fold(
                 (failure) {
               emit(ChatError(message: 'Не удалось создать новый чат: ${failure.message}'));
-              return; // Выходим из метода, если не удалось получить имя
+              return;
             },
                 (newChatName) {
-              _currentChatName = newChatName; // Устанавливаем имя нового чата
+              _currentChatName = newChatName;
               AppLogger.debug('Создан новый чат с именем: $_currentChatName');
             }
         );
       }
 
-      // Теперь можно отправить сообщение
       emit(ChatProcessing(
         messages: _messages,
         currentChatName: _currentChatName,
+        progress: 0.0, // Начальный прогресс
       ));
-      // Логируем информацию о сообщении, которое отправляется
-      print('Отправка сообщения: "${event.messageContent}" в чат: $_currentChatName');
 
-      // Отправка сообщения через use case
-      final result = await sendMessage(event.messageContent, _currentChatName!);
+      // Используем ваш класс SendMessage для отправки сообщения
+      final result = await sendMessage(
+        event.messageContent,
+        _currentChatName!,
+        isMultiline: event.isMultiline,
+        onProgress: (progress) {
+          emit(ChatProcessing(
+            messages: _messages,
+            currentChatName: _currentChatName,
+            progress: progress, // Обновляем прогресс в состоянии
+          ));
+        },
+      );
 
       // Обработка результата отправки сообщения
       result.fold(
@@ -158,6 +166,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       ));
     }
   }
+
 
   Future<void> _onClearChat(ClearChatEvent event,
       Emitter<ChatState> emit,) async {

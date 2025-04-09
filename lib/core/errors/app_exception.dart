@@ -1,5 +1,5 @@
 /// Базовый класс для всех исключений приложения
-abstract class AppException implements Exception {
+class AppException implements Exception {
   final String message;
   final dynamic originalError;
 
@@ -7,12 +7,10 @@ abstract class AppException implements Exception {
 
   @override
   String toString() {
-    if (originalError != null) {
-      return '$runtimeType: $message (Ошибка: $originalError)';
-    }
-    return '$runtimeType: $message';
+    return '$runtimeType: $message${originalError != null ? ' (Ошибка: $originalError)' : ''}';
   }
 }
+
 
 /// Ошибка сетевого взаимодействия
 class NetworkException extends AppException {
@@ -37,44 +35,37 @@ class ServerException extends AppException {
 
 /// Ошибка кэша
 class CacheException extends AppException {
-  CacheException(String message, [dynamic originalError])
-      : super(message, originalError);
+  CacheException(super.message, [super.originalError]);
 }
 
 /// Ошибка форматирования данных
 class FormatException extends AppException {
-  FormatException(String message, [dynamic originalError])
-      : super(message, originalError);
+  FormatException(super.message, [super.originalError]);
 }
 
 /// Ошибка операций с файлами
 class FileException extends AppException {
-  FileException(String message, [dynamic originalError])
-      : super(message, originalError);
+  FileException(super.message, [super.originalError]);
 }
 
 /// Ошибка безопасности
 class SecurityException extends AppException {
-  SecurityException(String message, [dynamic originalError])
-      : super(message, originalError);
+  SecurityException(super.message, [super.originalError]);
 }
 
 /// Ошибка бизнес-логики
 class BusinessException extends AppException {
-  BusinessException(String message, [dynamic originalError])
-      : super(message, originalError);
+  BusinessException(super.message, [super.originalError]);
 }
 
 /// Ошибка доступа к функциональности
 class PermissionException extends AppException {
-  PermissionException(String message, [dynamic originalError])
-      : super(message, originalError);
+  PermissionException(super.message, [super.originalError]);
 }
 
 /// Необработанная ошибка
 class UnknownException extends AppException {
-  UnknownException(String message, [dynamic originalError])
-      : super(message, originalError);
+  UnknownException(super.message, [super.originalError]);
 
   factory UnknownException.fromError(dynamic error) {
     if (error is Exception || error is Error) {
