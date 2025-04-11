@@ -35,7 +35,6 @@ class ClassifierDataSourceImpl implements ClassifierDataSource {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-
         // Улучшенная валидация ответа
         if (!data.containsKey('output') || !data.containsKey('outputEmotions')) {
           throw FormatException('Неверный формат ответа API: отсутствуют обязательные поля');

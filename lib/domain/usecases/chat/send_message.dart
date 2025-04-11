@@ -71,7 +71,7 @@ class SendMessage {
 
     // Если многострочный режим, разбиваем текст на строки
     if (isMultiline) {
-    final lines = englishText.split('\n');
+    final lines = englishText.split(RegExp(r'\r?\n')).where((line) => line.trim().isNotEmpty).toList();
     final totalLines = lines.length;
 
     for (int i = 0; i < totalLines; i++) {

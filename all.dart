@@ -5108,7 +5108,7 @@ class ConfidenceIndicator extends StatelessWidget {
   }
   /// Возвращает цвет в зависимости от уровня уверенности
   Color _getConfidenceColor(double confidence) {
-    if (confidence > 0.8) {
+    if (confidence > 0.75) {
       return Colors.green;
     } else if (confidence > 0.5) {
       return Colors.yellow;

@@ -113,6 +113,7 @@ class TranslationKeys {
   static const String dontSave = 'dontSave';
   static const String saveAndCreate = 'saveAndCreate';
   static const String defaultChatNameError = 'defaultChatNameError';
+  static const String close = "close";
 }
 
 abstract class TranslationService {

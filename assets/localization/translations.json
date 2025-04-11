@@ -1,5 +1,6 @@
 {
   "en": {
+    "close": "Close",
     "appTitle": "TextSense AI",
     "enterText": "Enter text...",
     "category": "Category",
@@ -109,6 +110,7 @@
     "rightsReserved": "© 2025 All rights reserved"
   },
   "ru": {
+    "close": "Закрыть",
     "appTitle": "TextSense AI",
     "enterText": "Введите текст...",
     "category": "Категория",
@@ -218,6 +220,7 @@
     "rightsReserved": "© 2025 Все права защищены"
   },
   "es": {
+    "close": "Cerrar",
     "appTitle": "TextSense AI",
     "enterText": "Ingrese texto...",
     "category": "Categoría",
@@ -327,6 +330,7 @@
     "rightsReserved": "© 2025 Todos los derechos reservados"
   },
   "fr": {
+    "close": "Fermer",
     "appTitle": "TextSense AI",
     "enterText": "Entrez du texte...",
     "category": "Catégorie",

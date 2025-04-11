@@ -8,7 +8,7 @@ import '../widgets/message_actions_menu.dart';
 import '../../domain/entities/message.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({Key? key}) : super(key: key);
+  const ChatScreen({super.key});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -99,7 +99,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      LinearProgressIndicator(value: state.progress), // Индикатор прогресса
+                      _buildCustomProgressIndicator(state.progress), // Индикатор прогресса
                       const SizedBox(height: 8),
                       Text('${(state.progress * 100).toStringAsFixed(0)}% обработано'), // Текст с процентом
                     ],
@@ -124,4 +124,42 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
+
+  Widget _buildCustomProgressIndicator(double progress) {
+    return Container(
+      width: double.infinity,
+      height: 10,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8), // Округленные углы
+        color: Colors.grey[300], // Цвет фона индикатора
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            offset: Offset(0, 2),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8), // Округленные углы
+        child: Row(
+          children: [
+            Expanded(
+              flex: (progress * 100).toInt(),
+              child: Container(
+                color: Colors.green, // Цвет для завершенной части
+              ),
+            ),
+            Expanded(
+              flex: 100 - (progress * 100).toInt(),
+              child: Container(
+                color: Colors.transparent, // Прозрачная оставшаяся часть
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 }

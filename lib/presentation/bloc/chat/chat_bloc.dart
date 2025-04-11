@@ -130,7 +130,6 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         _currentChatName!,
         isMultiline: event.isMultiline,
         onProgress: (progress) {
-          print('Прогресс: $progress'); // Логи прогресса
           emit(ChatProcessing(
             messages: _messages,
             currentChatName: _currentChatName,
