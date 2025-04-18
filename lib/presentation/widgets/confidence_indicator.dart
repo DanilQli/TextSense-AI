@@ -18,12 +18,11 @@ class ConfidenceIndicator extends StatelessWidget {
     final List<double> classificationConfidenceLevels = classificationResult
         .map((result) => _getConfidence(result))
         .toList();
-    final List<double> emotionConfidenceLevels = emotionResult
-        .map((emotion) {
-      return emotion[0]; // Предполагаем, что это первый элемент
-    })
-        .toList();
-
+    final List<double> emotionConfidenceLevels = emotionResult.map((emotion) {
+      final double rawValue = emotion[0];
+      final double transformedValue = (rawValue + 1) / 2;
+      return double.parse(transformedValue.toStringAsFixed(2));
+    }).toList();
       return Column(
       children: [
         // Линия уверенности в классификации
@@ -78,7 +77,7 @@ class ConfidenceIndicator extends StatelessWidget {
 
   /// Возвращает цвет в зависимости от уровня уверенности
   Color _getConfidenceColor(double confidence) {
-    if (confidence > 0.75) {
+    if (confidence > 0.7) {
       return Colors.green;
     } else if (confidence > 0.5) {
       return Colors.yellow;

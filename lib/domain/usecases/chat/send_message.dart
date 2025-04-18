@@ -35,11 +35,11 @@ class SendMessage {
       if (text.length > AppConstants.maxTextLength) {
         return const Left(ValidationFailure(message: 'Текст сообщения слишком длинный'));
       }
-
-      // Проверка на наличие запрещенных символов или последовательностей
-      if (text.contains(RegExp(r'[^\p{L}\p{N}\p{P}\p{Z}\n\r]', unicode: true))) {
-        return const Left(ValidationFailure(message: 'Текст содержит недопустимые символы'));
-      }
+      final regExp = RegExp(
+        r'''[^\u0000-\u007F\u0080-\uFFFF\s.,!?;:'"()\[\]{}<>@#\$%\^&\*\-+=/\\|`~–—…]''',
+      unicode: true,
+      );
+      text = text.replaceAll(regExp, '');
 
       messagesResult.fold(
               (failure) {
