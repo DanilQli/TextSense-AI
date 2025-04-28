@@ -128,31 +128,8 @@ def find_and_print_structure(start_path):
 
 
 if __name__ == '__main__':
-    #main()
+    main()
     #directory_to_scan = r"D:\Практика\Курсовая\Script"  # Используем r"" для обработки \
     #find_and_print_structure(directory_to_scan)
-    import re
 
-    # Задаём имя исходного и выходного файлов
-    input_file = 'autosave.xml'  # Измените на имя вашего текстового файла
-    output_file = 'output.xml'
-
-    # Компилируем регулярное выражение: строка должна начинаться с "0.", затем идти ровно 8 символов (любые)
-    pattern = re.compile(r"^0\..{8}$")
-
-    # Открываем исходный файл для чтения
-    with open(input_file, 'r', encoding='utf-8') as file:
-        lines = file.readlines()
-
-    # Открываем выходной файл для записи
-    with open(output_file, 'w', encoding='utf-8') as file:
-        i = 0
-        while i < len(lines):
-            if '<lastvote>Объединение республиканцев</lastvote>\n' == lines[i]:
-                lines[i] = '<lastvote>Доминион</lastvote>\n'
-                # Записываем измененные строки в выходной файл
-            file.write(lines[i])  # Записываем строку с <sy>
-            i += 1  # Увеличиваем индекс для следующей итерации
-
-    print("Изменения внесены, результат записан в", output_file)
 

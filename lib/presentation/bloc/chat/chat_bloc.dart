@@ -555,12 +555,28 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       Emitter<ChatState> emit,
       ) async {
     try {
-      _messages = List.from(_messages)
-        ..remove(event.message);
-      emit(ChatLoaded(
-        messages: _messages,
-        currentChatName: _currentChatName,
-      ));
+      // Проверяем, есть ли id сообщения
+      if (event.message.id == null) {
+        emit(const ChatError(message: 'Не удалось удалить сообщение: id сообщения нулевое.'));
+        return;
+      }
+
+      // Удаляем сообщение из локального хранилища
+      final result = await chatRepository.deleteChat(event.message.id!); // Используем ! для явного указания, что id не null
+      result.fold(
+            (failure) {
+          AppLogger.error('Ошибка при удалении сообщения: ${failure.message}');
+          emit(ChatError(message: failure.message));
+        },
+            (success) {
+          // Обновляем список сообщений
+          _messages = List.from(_messages)..remove(event.message);
+          emit(ChatLoaded(
+            messages: _messages,
+            currentChatName: _currentChatName,
+          ));
+        },
+      );
     } catch (e) {
       AppLogger.error('Ошибка при удалении сообщения', e);
       emit(ChatError(message: Tr.get(TranslationKeys.errorNum13)));
@@ -570,6 +586,7 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
       ));
     }
   }
+
 
   Future<void> _onTranslateMessage(
       TranslateMessageEvent event,
